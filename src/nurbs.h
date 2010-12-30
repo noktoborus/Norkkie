@@ -15,7 +15,7 @@ typedef uint8_t NKKBOpt_t;
 #define NKKB_OPT_REMOVE	(3 << NKKB_OPT_S1)
 #define NKKB_OPT_M1 (NKKB_OPT_BEFORE | NKKB_OPT_AFTER | NKKB_OPT_REMOVE)
 
-#define NKKB_ERR_MEM	1
+#define NKKB_ERR_NOMEM	1
 #define NKKB_ERR_INKEY	2
 #define NKKB_ERR_INVAL	3
 

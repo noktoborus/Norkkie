@@ -127,7 +127,6 @@ motion (int x, int y)
 
 int main(int argc, char **argv)
 {
-	/*
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize (600, 600);
@@ -139,54 +138,6 @@ int main(int argc, char **argv)
 	glutKeyboardFunc(keyboard);
 
 	glutMainLoop();
-	*/
-	struct NKKBVertex_t nw[] = 
-	{
-		{{1.0f, 1.0f, 1.0f}},
-		{{2.0f, 2.0f, 2.0f}},
-		{{3.0f, 3.0f, 3.0f}},
-		{{4.0f, 4.0f, 4.0f}},
-		{{5.0f, 5.0f, 5.0f}},
-		{{6.0f, 6.0f, 6.0f}},
-		{{7.0f, 7.0f, 7.0f}},
-		{{8.0f, 8.0f, 8.0f}},
-		{{9.0f, 9.0f, 9.0f}},
-	};
-	void *pp = malloc (sizeof (nw));
-	memcpy (pp, nw, sizeof (nw));
-	struct NKKBWire_t n = 
-	{
-		0,
-		{3, 3},
-		9,
-		pp
-	};
-	size_t i, ii;
-	nkkbProc (&n, NKKB_OPT_X | NKKB_OPT_REMOVE, 1);
-	for (i = 0; i < n.size[1]; i++)
-	{
-		for (ii = 0; ii < n.size[0]; ii++)
-			printf ("%f ", n.wire[i * n.size[0] + ii].v[0]);
-		printf ("\n");
-	}
-	printf ("-- %d, %d\n", n.size[0], n.size[1]);
-	nkkbProc (&n, NKKB_OPT_X | NKKB_OPT_BEFORE, 1);
-	for (i = 0; i < n.size[1]; i++)
-	{
-		for (ii = 0; ii < n.size[0]; ii++)
-			printf ("%f ", n.wire[i * n.size[0] + ii].v[0]);
-		printf ("\n");
-	}
-	printf ("-- %d, %d\n", n.size[0], n.size[1]);
-	nkkbProc (&n, NKKB_OPT_X | NKKB_OPT_AFTER, -1);
-	for (i = 0; i < n.size[1]; i++)
-	{
-		for (ii = 0; ii < n.size[0]; ii++)
-			printf ("%f ", n.wire[i * n.size[0] + ii].v[0]);
-		printf ("\n");
-	}
-	printf ("-- %d, %d\n", n.size[0], n.size[1]);
-
 	return 0;
 }
 

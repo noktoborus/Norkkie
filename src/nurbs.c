@@ -9,18 +9,39 @@ struct NKKBWire_t NKKBWire_d =
 };
 
 
-inline static void
+inline static unsigned int
 _nkkb_err (struct NKKBWire_t *wire, unsigned int errno)
 {
-	if (!wire) return;
+	if (!wire) return NKKB_ERR_INVAL;
 	wire->errno = errno;
+	return errno;
 }
 
 void
 nkkbWire (struct NKKBWire_t *wire, size_t sizeX, size_t sizeY)
 {
+	struct NKKBVertex_t *pWire = NULL;
+	size_t len = sizeX * sizeY;
+	if (len != wire->len)
+	{
+		pWire = calloc (len, sizeof (struct NKKBVertex_t));
+		if (!pWire)
+		{
+			_nkkb_err (wire, NKKB_ERR_NOMEM);
+			return;
+		}
+		free (wire->wire);
+		wire->wire = pWire;
+		wire->size[0] = sizeX;
+		wire->size[1] = sizeY;
+		wire->len = len;
+	}
+	else
+	{
+		memset ((void*)wire->wire, 0, len * sizeof (struct NKKBVertex_t));
+	}
 }
-#include <stdio.h>
+
 void
 nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 {
@@ -68,7 +89,7 @@ nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 		pWire = calloc (len, sizeof (struct NKKBVertex_t));
 		if (!pWire)
 		{
-			_nkkb_err (wire, NKKB_ERR_MEM);
+			_nkkb_err (wire, NKKB_ERR_NOMEM);
 			return;
 		}
 	}
