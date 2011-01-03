@@ -29,12 +29,15 @@ struct scrn_change_t
 } scrn_change =
 {
 	0,
-	100.0f,
+	-70.0f,
 	{0.0f, 0.0f}
 };
 
+struct NKKBWire_t wire;
+
 void display(void)
 {
+	size_t x;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// zero matrix
 	glLoadIdentity ();
@@ -43,8 +46,49 @@ void display(void)
 	glRotatef (scrn_change.angle[1], 1.0, 0.0, 0.0);
 	glRotatef (scrn_change.angle[0], 0.0, 1.0, 0.0);
 	// draw screen
-	
+	glPolygonMode (GL_FRONT, GL_LINE);
+	/*
+	glBegin (GL_TRIANGLE_STRIP);
+	glColor3f (1.f, 0.f, 0.f);
+	glVertex2f (0.f, 0.f);	// 0
+	glColor3f (0.f, 1.f, 0.f);
+	glVertex2f (0.f, 10.f);	// 1
+	glColor3f (0.f, 0.f, 1.f);
+	glVertex2f (10.f, 10.f);	// 2
 
+	glColor3f (1.f, 1.f, 1.f);
+	glVertex2f (0.f, 20.f);	// 3
+	glColor3f (1.f, 0.f, 0.f);
+	glVertex2f (10.f, 20.f);	// 4
+
+	// reset to 2 line
+	glVertex2f (10.f, 20.f);	// 5
+	// new line from 5..6 node
+	glColor3f (0.f, 1.f, 0.f);
+	glVertex2f (20.f, 10.f);	// 6
+
+	glVertex2f (20.f, 20.f);
+	glEnd ();
+	*/
+	nkkbPoly (&wire, 10, 0);
+	glBegin (GL_TRIANGLE_STRIP);
+	for (x = 0; x < wire.polys_size; x++)
+	{
+		switch (x % 3)
+		{
+			case 0:
+				glColor3f (1.f, 0.f, 0.f);
+				break;
+			case 1:
+				glColor3f (0.f, 1.f, 0.f);
+				break;
+			case 2:
+				glColor3f (0.f, 0.f, 1.f);
+				break;
+		}
+		glVertex3fv (wire.polys[x].v);
+	}
+	glEnd ();
 	glutSwapBuffers ();
 }
 
@@ -137,6 +181,7 @@ int main(int argc, char **argv)
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
 
+	nkkbWire (&wire, 1, 10);
 	glutMainLoop();
 	return 0;
 }

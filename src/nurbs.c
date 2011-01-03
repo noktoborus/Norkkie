@@ -1,18 +1,10 @@
 #include <string.h>
 #include "nurbs.h"
-struct NKKBWire_t NKKBWire_d = 
-{
-	0,
-	{0, 0},
-	0,
-	NULL,
-};
-
 
 inline static unsigned int
 _nkkb_err (struct NKKBWire_t *wire, unsigned int errno)
 {
-	if (!wire) return NKKB_ERR_INVAL;
+	if (!wire) return NKKB_ERR_INPTR;
 	wire->errno = errno;
 	return errno;
 }
@@ -20,11 +12,11 @@ _nkkb_err (struct NKKBWire_t *wire, unsigned int errno)
 void
 nkkbWire (struct NKKBWire_t *wire, size_t sizeX, size_t sizeY)
 {
-	struct NKKBVertex_t *pWire = NULL;
+	struct NKKBVertexW_t *pWire = NULL;
 	size_t len = sizeX * sizeY;
 	if (len != wire->len)
 	{
-		pWire = calloc (len, sizeof (struct NKKBVertex_t));
+		pWire = calloc (len, sizeof (struct NKKBVertexW_t));
 		if (!pWire)
 		{
 			_nkkb_err (wire, NKKB_ERR_NOMEM);
@@ -45,7 +37,7 @@ nkkbWire (struct NKKBWire_t *wire, size_t sizeX, size_t sizeY)
 void
 nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 {
-	struct NKKBVertex_t *pWire = NULL;
+	struct NKKBVertexW_t *pWire = NULL;
 	size_t sz[] = { wire->size[0], wire->size[1] };
 	size_t axno = 0;
 	size_t cno = 0;
@@ -132,5 +124,54 @@ nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 	wire->wire = pWire;
 	wire->len = len;
 	memcpy ((void*)wire->size, (const void*)sz, sizeof (sz));
+}
+
+void
+nkkbPoly (struct NKKBWire_t *wire, size_t gress, size_t scale)
+{
+	struct NKKBVertex_t *vxes = NULL;
+	struct NKKBVertex_t vx = {{0.f, 0.f, 0.f}};
+	float direct = 1.f;
+	size_t x = 0;
+	size_t line = (gress + 2) * 2;
+	size_t x_ = line * (1 + gress);
+	// alloc field
+	vxes = calloc (x_, sizeof (struct NKKBVertex_t));
+	if (!vxes)
+	{
+		_nkkb_err (wire, NKKB_ERR_NOMEM);
+		return;
+	}
+	// place field
+	for (x = 0; x < x_; x++)
+	{
+		if (x && !(x % line))
+		{
+			// invert step
+			if ((direct = -direct) < 0.f)
+				// and fix start point position
+				vx.v[0] += 2;
+			vxes[x].v[0] = vx.v[0];
+			vxes[x].v[1] = vx.v[1];
+		}
+		else
+		if (x % 2)
+		{
+			vxes[x].v[0] = vx.v[0] + direct;
+			vxes[x].v[1] = vx.v[1];
+		}
+		else
+		{
+			vxes[x].v[0] = vx.v[0];
+			vxes[x].v[1] = (vx.v[1] += direct);
+		}
+	}
+	//
+	//
+	wire->polys = vxes;
+	wire->polys_len = line;
+	wire->polys_size = x_;
+	wire->polys_gress = gress;
+	wire->polys_scale = scale;
 }
 
