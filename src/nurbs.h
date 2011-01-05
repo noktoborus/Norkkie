@@ -31,16 +31,21 @@ struct NKKBVertexW_t
 	float w; // weight
 };
 
+struct NKKBPolly_t
+{
+	float dimension[2]; // width and height
+	size_t size; // size of array
+	size_t len; // count of points in one line
+	struct NKKBVertex_t *s;
+};
+
 struct NKKBWire_t
 {
 	unsigned int errno;
-	size_t size[2];
-	size_t len;
-	size_t polys_len;
-	size_t polys_size;
-	size_t polys_gress;
-	size_t polys_scale;
-	struct NKKBVertex_t *polys;
+	float dimension[2]; // width and height
+	size_t size; // overall points count in array
+	size_t len; // len of line (count point in one line)
+	struct NKKBPolly_t *polly;
 	struct NKKBVertexW_t *wire;
 };
 
@@ -49,12 +54,16 @@ struct NKKBWire_t
  */
 void nkkbWire (struct NKKBWire_t *wire, size_t sizeX, size_t sizeY);
 /*
+ * resize field
+ */
+void nkkbXY (struct NKKBWire_t *wire, size_t X, size_t Y);
+/*
  * Execec selected operation on selected row/col
  */
 void nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no);
 /*
  * Create a polyginal model
  */
-void nkkbPoly (struct NKKBWire_t *wire, size_t gress, size_t scale);
+void nkkbPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY);
 #endif // define _NURBS_H_1293390403
 

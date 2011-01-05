@@ -10,6 +10,13 @@ _nkkb_err (struct NKKBWire_t *wire, unsigned int errno)
 }
 
 void
+nkkbXY (struct NKKBWire_t *wire, size_t szX, size_t szY)
+{
+	wire->dimension[0] = szX;
+	wire->dimension[1] = szY;
+}
+
+void
 nkkbWire (struct NKKBWire_t *wire, size_t sizeX, size_t sizeY)
 {
 	struct NKKBVertexW_t *pWire = NULL;
@@ -24,8 +31,7 @@ nkkbWire (struct NKKBWire_t *wire, size_t sizeX, size_t sizeY)
 		}
 		free (wire->wire);
 		wire->wire = pWire;
-		wire->size[0] = sizeX;
-		wire->size[1] = sizeY;
+		wire->size = sizeX;
 		wire->len = len;
 	}
 	else
@@ -38,11 +44,13 @@ void
 nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 {
 	struct NKKBVertexW_t *pWire = NULL;
-	size_t sz[] = { wire->size[0], wire->size[1] };
+	size_t sz[2];
 	size_t axno = 0;
+	size_t len = 0;
 	size_t cno = 0;
 	size_t i = 0;
-	size_t len = 0;
+	sz[0] = wire->len;
+	sz[1] = wire->size / wire->len;
 	switch (opts & NKKB_OPT_M0)
 	{
 		case NKKB_OPT_X:
@@ -55,7 +63,7 @@ nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 			_nkkb_err (wire, NKKB_ERR_INKEY);
 			return;
 	}
-	if (no >= wire->size[axno]) no = wire->size[axno] - 1;
+	if (no >= sz[axno]) no = sz[axno] - 1;
 	switch (opts & NKKB_OPT_M1)
 	{
 		case NKKB_OPT_AFTER:
@@ -65,11 +73,6 @@ nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 			break;
 		case NKKB_OPT_REMOVE:
 			sz[axno]--;
-			if (no >= wire->size[axno])
-			{
-				_nkkb_err (wire, NKKB_ERR_INVAL);
-				return;
-			}
 			break;
 		default:
 			_nkkb_err (wire, NKKB_ERR_INKEY);
@@ -78,7 +81,7 @@ nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 	len = sz[0] * sz[1];
 	if (len)
 	{
-		pWire = calloc (len, sizeof (struct NKKBVertex_t));
+		pWire = calloc (len, sizeof (struct NKKBVertexW_t));
 		if (!pWire)
 		{
 			_nkkb_err (wire, NKKB_ERR_NOMEM);
@@ -110,9 +113,9 @@ nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 		case NKKB_OPT_REMOVE:
 			do
 			{
-				if ((axno == 0 && cno % wire->size[0] != no) ||
-						(axno == 1 && (cno < (no * wire->size[0]) ||
-						 cno >= (no * wire->size[0] + wire->size[0]))))
+				if ((axno == 0 && cno % wire->len != no) ||
+						(axno == 1 && (cno < (no * wire->len) ||
+						 cno >= (no * wire->len + wire->len))))
 				{
 					pWire[i++] = wire->wire[cno];
 				}
@@ -127,51 +130,70 @@ nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 }
 
 void
-nkkbPoly (struct NKKBWire_t *wire, size_t gress, size_t scale)
+nkkbPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY)
 {
-	struct NKKBVertex_t *vxes = NULL;
+	struct NKKBPolly_t *polly = NULL;
 	struct NKKBVertex_t vx = {{0.f, 0.f, 0.f}};
-	float direct = 1.f;
 	size_t x = 0;
-	size_t line = (gress + 2) * 2;
-	size_t x_ = line * (1 + gress);
-	// alloc field
-	vxes = calloc (x_, sizeof (struct NKKBVertex_t));
-	if (!vxes)
+	float direct = 1.f;
+	// base alloc
+	polly = (struct NKKBPolly_t*)calloc (1, sizeof (struct NKKBPolly_t));
+	if (!polly)
 	{
 		_nkkb_err (wire, NKKB_ERR_NOMEM);
 		return;
 	}
-	// place field
-	for (x = 0; x < x_; x++)
+	/*
+	 * gressX = 2
+	 * gressY = 3
+	 *
+	 * field = (gressX + 2)x(gressY + 2)
+	 *
+	 * -> X
+	 * . . . . | Y
+	 * . . . . v
+	 * . . . .
+	 * . . . .
+	 * . . . .
+	 */
+	memcpy ((void*)polly->dimension,
+			(void*)wire->dimension, sizeof (float) * 2);
+	polly->len = (gressX + 2) * 2;
+	polly->size = ((gressX + 2) * (gressY + 2)) + (gressX + 2) * gressY;
+	polly->s = calloc (polly->size, sizeof (struct NKKBVertex_t));
+	if (!polly->s)
 	{
-		if (x && !(x % line))
+		_nkkb_err (wire, NKKB_ERR_NOMEM);
+		free (polly);
+		return;
+	}
+	for (x = 1; x < polly->size; x++)
+	{
+		if (!(x % polly->len))
 		{
-			// invert step
-			if ((direct = -direct) < 0.f)
-				// and fix start point position
+			if((direct = -direct) < 0.f)
+			{
 				vx.v[0] += 2;
-			vxes[x].v[0] = vx.v[0];
-			vxes[x].v[1] = vx.v[1];
+			}
 		}
 		else
 		if (x % 2)
 		{
-			vxes[x].v[0] = vx.v[0] + direct;
-			vxes[x].v[1] = vx.v[1];
+			polly->s[x].v[0] += direct;
 		}
 		else
 		{
-			vxes[x].v[0] = vx.v[0];
-			vxes[x].v[1] = (vx.v[1] += direct);
+			vx.v[1] += direct;
 		}
+		polly->s[x].v[0] += vx.v[0];
+		polly->s[x].v[1] += vx.v[1];
+		polly->s[x].v[0] = polly->s[x].v[0] / (float)(gressX + 1) *\
+						   polly->dimension[0];
+		polly->s[x].v[1] = polly->s[x].v[1] / (float)(gressY + 1) *\
+						   polly->dimension[1];
 	}
-	//
-	//
-	wire->polys = vxes;
-	wire->polys_len = line;
-	wire->polys_size = x_;
-	wire->polys_gress = gress;
-	wire->polys_scale = scale;
+	if (wire->polly)
+		free (wire->polly);
+	wire->polly = polly;
 }
 

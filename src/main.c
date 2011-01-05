@@ -34,10 +34,16 @@ struct scrn_change_t
 };
 
 struct NKKBWire_t wire;
+size_t fix = 100;
 
 void display(void)
 {
 	size_t x;
+	float cpos[3] = {0.f, 0.f, 0.f};
+	float npos[3] = {0.f, 0.f, 0.f};
+	cpos[0] = 0.f;
+	npos[0] = 0.f;
+	x = 0;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// zero matrix
 	glLoadIdentity ();
@@ -47,6 +53,7 @@ void display(void)
 	glRotatef (scrn_change.angle[0], 0.0, 1.0, 0.0);
 	// draw screen
 	glPolygonMode (GL_FRONT, GL_LINE);
+#if 0
 	/*
 	glBegin (GL_TRIANGLE_STRIP);
 	glColor3f (1.f, 0.f, 0.f);
@@ -70,9 +77,11 @@ void display(void)
 	glVertex2f (20.f, 20.f);
 	glEnd ();
 	*/
-	nkkbPoly (&wire, 10, 0);
+#endif
+#if 1
+	//printf ("@ \n");
 	glBegin (GL_TRIANGLE_STRIP);
-	for (x = 0; x < wire.polys_size; x++)
+	for (x = 0; wire.polly && x < wire.polly->size && x < fix; x++)
 	{
 		switch (x % 3)
 		{
@@ -86,9 +95,57 @@ void display(void)
 				glColor3f (0.f, 0.f, 1.f);
 				break;
 		}
-		glVertex3fv (wire.polys[x].v);
+		glVertex3fv (wire.polly->s[x].v);
+		//printf ("%2d `%.2f, %.2f\n", x, wire.polly->s[x].v[0], wire.polly->s[x].v[1]);
 	}
 	glEnd ();
+#endif
+#if 0
+	// draw control
+	//glTranslatef (0.f, 0.f, 1.f);
+	glColor3f (1.f, 0.f, 0.f);
+	glBegin (GL_LINES);
+	printf ("*   /%d [%dx%d]\n", wire.len, wire.size[0], wire.size[1]);
+	for (x = 0; x < wire.len; x++)
+	{
+		// cpos = Current POSition
+		// npos = Next POSition
+		// x
+		cpos[0] = (x % wire.size[0]) / ((float)wire.size[0] - 1);// *
+			//(wire.polys[wire.polys_len].v[0]);
+		// y
+		cpos[1] = (x / wire.size[0]) / ((float)wire.size[1] - 1);// *
+			//(wire.polys[wire.polys_len].v[1]);
+
+		if (x %wire.size[0] + 1 < wire.size[0])
+		{
+			npos[0] = (((x % wire.size[0]) + 1) / ((float)wire.size[0] - 1));// *
+				//(wire.polys_len / 2.0f);
+			npos[1] = cpos[1];
+			glVertex3fv (cpos);
+			glVertex3f (npos[0], npos[1], npos[2]);
+		}
+		if (x / wire.size[0] + 1 < wire.size[1])
+		{
+			npos[0] = cpos[0];
+			npos[1] = (((x / wire.size[0]) + 1) / ((float)wire.size[1] - 1)) *
+				(wire.polys_len / 2.0f);
+			glVertex3fv (cpos);
+			glVertex3fv (npos);
+		}
+		//printf ("%d %.2f/%.2f \n", x, cpos[0], cpos[1] );
+	}
+	glEnd ();
+#endif 
+#if 0
+	glBegin (GL_TRIANGLES);
+		glColor3f (1.f, 1.f, 1.f);
+		glVertex3f (0.f, 0.f, 0.f);
+		glColor3f (0.f, 0.f, 0.f);
+		glVertex3f (10.f, 10.f, 0.f);
+		glVertex3f (10.f, 0.f, 0.f);
+	glEnd ();
+#endif
 	glutSwapBuffers ();
 }
 
@@ -106,11 +163,18 @@ void reshape(int x, int y)
 
 void keyboard(unsigned char key, int x, int y)
 {
-   switch (key) {
-      case 27:
-         exit(0);
-         break;
-   }
+	switch (key) {
+		case 27:
+			exit(0);
+			break;
+		case 45:
+			fix--;
+			break;
+		case 61:
+			fix++;
+			break;
+	}
+	glutPostRedisplay ();
 }
 
 void
@@ -181,7 +245,10 @@ int main(int argc, char **argv)
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
 
-	nkkbWire (&wire, 1, 10);
+	nkkbWire (&wire, 12, 12);
+	nkkbXY (&wire, 10, 10);
+	nkkbPolly (&wire, 100, 100);
+	fix = wire.polly->size;
 	glutMainLoop();
 	return 0;
 }
