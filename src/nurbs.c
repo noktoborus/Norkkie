@@ -10,7 +10,7 @@ _nkkb_err (struct NKKBWire_t *wire, unsigned int errno)
 }
 
 void
-nkkbXY (struct NKKBWire_t *wire, size_t szX, size_t szY)
+nkkbResize (struct NKKBWire_t *wire, size_t szX, size_t szY)
 {
 	wire->dimension[0] = szX;
 	wire->dimension[1] = szY;
@@ -31,8 +31,8 @@ nkkbWire (struct NKKBWire_t *wire, size_t sizeX, size_t sizeY)
 		}
 		free (wire->wire);
 		wire->wire = pWire;
-		wire->size = sizeX;
-		wire->len = len;
+		wire->size = len;
+		wire->len = sizeX;
 	}
 	else
 	{
@@ -130,7 +130,7 @@ nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no)
 }
 
 void
-nkkbPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY)
+nkkbGenPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY)
 {
 	struct NKKBPolly_t *polly = NULL;
 	struct NKKBVertex_t vx = {{0.f, 0.f, 0.f}};
@@ -195,5 +195,38 @@ nkkbPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY)
 	if (wire->polly)
 		free (wire->polly);
 	wire->polly = polly;
+}
+
+void
+nkkbGenPoints (struct NKKBWire_t *wire)
+{
+	struct NKKBVertex_t *point;
+	size_t s;
+	
+	point = calloc (wire->size, sizeof (struct NKKBVertex_t));
+	if (!point)
+	{
+		free (point);
+		_nkkb_err (wire, NKKB_ERR_NOMEM);
+		return;
+	}
+
+	for (s = 0; s < wire->size; s++)
+	{
+		point[s].v[0] = (s % wire->len) / (float)(wire->len - 1) *
+				wire->dimension[0];
+		point[s].v[1] = (s / wire->len) / (float)(wire->size / wire->len - 1) *
+				wire->dimension[1];
+	}
+
+	if (wire->point)
+		free (wire->point);
+	wire->point = point;
+}
+
+void
+nkkbBendPolly (struct NKKBWire_t *wire)
+{
+
 }
 

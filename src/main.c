@@ -100,40 +100,16 @@ void display(void)
 	}
 	glEnd ();
 #endif
-#if 0
+#if 1
 	// draw control
 	//glTranslatef (0.f, 0.f, 1.f);
 	glColor3f (1.f, 0.f, 0.f);
-	glBegin (GL_LINES);
-	printf ("*   /%d [%dx%d]\n", wire.len, wire.size[0], wire.size[1]);
-	for (x = 0; x < wire.len; x++)
+	glBegin (GL_POINTS);
+	printf ("@\n");
+	for (x = 0; x < wire.size; x++)
 	{
-		// cpos = Current POSition
-		// npos = Next POSition
-		// x
-		cpos[0] = (x % wire.size[0]) / ((float)wire.size[0] - 1);// *
-			//(wire.polys[wire.polys_len].v[0]);
-		// y
-		cpos[1] = (x / wire.size[0]) / ((float)wire.size[1] - 1);// *
-			//(wire.polys[wire.polys_len].v[1]);
-
-		if (x %wire.size[0] + 1 < wire.size[0])
-		{
-			npos[0] = (((x % wire.size[0]) + 1) / ((float)wire.size[0] - 1));// *
-				//(wire.polys_len / 2.0f);
-			npos[1] = cpos[1];
-			glVertex3fv (cpos);
-			glVertex3f (npos[0], npos[1], npos[2]);
-		}
-		if (x / wire.size[0] + 1 < wire.size[1])
-		{
-			npos[0] = cpos[0];
-			npos[1] = (((x / wire.size[0]) + 1) / ((float)wire.size[1] - 1)) *
-				(wire.polys_len / 2.0f);
-			glVertex3fv (cpos);
-			glVertex3fv (npos);
-		}
-		//printf ("%d %.2f/%.2f \n", x, cpos[0], cpos[1] );
+		glVertex3fv (wire.point[x].v);
+		printf ("# %.2f %.2f\n", wire.point[x].v[0], wire.point[x].v[1]);
 	}
 	glEnd ();
 #endif 
@@ -245,9 +221,10 @@ int main(int argc, char **argv)
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
 
-	nkkbWire (&wire, 12, 12);
-	nkkbXY (&wire, 10, 10);
-	nkkbPolly (&wire, 100, 100);
+	nkkbWire (&wire, 3, 3);
+	nkkbResize (&wire, 10, 10);
+	nkkbGenPolly (&wire, 1, 1);
+	nkkbGenPoints (&wire);
 	fix = wire.polly->size;
 	glutMainLoop();
 	return 0;

@@ -2,16 +2,22 @@
 #define _NURBS_H_1293390403 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 
 typedef uint8_t NKKBOpt_t;
 #define NKKB_OPT_S0	0
+// select X-axis for `no
 #define NKKB_OPT_X	(1 << NKKB_OPT_S0)
+// select Y-axis for `no
 #define NKKB_OPT_Y	(2 << NKKB_OPT_S0)
 #define NKKB_OPT_M0 (NKKB_OPT_X | NKKB_OPT_Y)
 
 #define NKKB_OPT_S1	(NKKB_OPT_S0 + 2)
+// insert before selected `no
 #define NKKB_OPT_BEFORE	(1 << NKKB_OPT_S1)
+// insert after selected `no
 #define NKKB_OPT_AFTER	(2 << NKKB_OPT_S1)
+// remove selected `no
 #define NKKB_OPT_REMOVE	(3 << NKKB_OPT_S1)
 #define NKKB_OPT_M1 (NKKB_OPT_BEFORE | NKKB_OPT_AFTER | NKKB_OPT_REMOVE)
 
@@ -46,6 +52,7 @@ struct NKKBWire_t
 	size_t size; // overall points count in array
 	size_t len; // len of line (count point in one line)
 	struct NKKBPolly_t *polly;
+	struct NKKBVertex_t *point;
 	struct NKKBVertexW_t *wire;
 };
 
@@ -56,7 +63,7 @@ void nkkbWire (struct NKKBWire_t *wire, size_t sizeX, size_t sizeY);
 /*
  * resize field
  */
-void nkkbXY (struct NKKBWire_t *wire, size_t X, size_t Y);
+void nkkbResize (struct NKKBWire_t *wire, size_t X, size_t Y);
 /*
  * Execec selected operation on selected row/col
  */
@@ -64,6 +71,9 @@ void nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no);
 /*
  * Create a polyginal model
  */
-void nkkbPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY);
+void nkkbGenPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY);
+void nkkbGenPoints (struct NKKBWire_t *wire);
+void nkkbBendPolly (struct NKKBWire_t *wire);
+
 #endif // define _NURBS_H_1293390403
 
