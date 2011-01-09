@@ -202,7 +202,7 @@ nkkbGenPoints (struct NKKBWire_t *wire)
 {
 	struct NKKBVertex_t *point;
 	size_t s;
-	
+
 	point = calloc (wire->size, sizeof (struct NKKBVertex_t));
 	if (!point)
 	{
