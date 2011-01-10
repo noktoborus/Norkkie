@@ -34,7 +34,6 @@ struct scrn_change_t
 };
 
 struct NKKBWire_t wire;
-size_t fix = 100;
 
 void display(void)
 {
@@ -79,9 +78,8 @@ void display(void)
 	*/
 #endif
 #if 1
-	//printf ("@ \n");
 	glBegin (GL_TRIANGLE_STRIP);
-	for (x = 0; wire.polly && x < wire.polly->size && x < fix; x++)
+	for (x = 0; wire.polly && x < wire.polly->size; x++)
 	{
 		switch (x % 3)
 		{
@@ -96,7 +94,6 @@ void display(void)
 				break;
 		}
 		glVertex3fv (wire.polly->s[x].v);
-		//printf ("%2d `%.2f, %.2f\n", x, wire.polly->s[x].v[0], wire.polly->s[x].v[1]);
 	}
 	glEnd ();
 #endif
@@ -104,12 +101,11 @@ void display(void)
 	// draw control
 	//glTranslatef (0.f, 0.f, 1.f);
 	glColor3f (1.f, 0.f, 0.f);
+	glPointSize (3);
 	glBegin (GL_POINTS);
-	printf ("@\n");
 	for (x = 0; x < wire.size; x++)
 	{
 		glVertex3fv (wire.point[x].v);
-		printf ("# %.2f %.2f\n", wire.point[x].v[0], wire.point[x].v[1]);
 	}
 	glEnd ();
 #endif 
@@ -122,7 +118,20 @@ void display(void)
 		glVertex3f (10.f, 0.f, 0.f);
 	glEnd ();
 #endif
-	glutSwapBuffers ();
+		glBegin(GL_TRIANGLES);						// Drawing Using Triangles
+		glVertex3f( 0.0f, 1.0f, 0.0f);				// Top
+		glVertex3f(-1.0f,-1.0f, 0.0f);				// Bottom Left
+		glVertex3f( 1.0f,-1.0f, 0.0f);				// Bottom Right
+	glEnd();							// Finished Drawing The Triangle
+	glLoadIdentity ();
+	glTranslatef (0.f, 0.f, -1.f);
+	//glScalef (-0.5f, -0.5f, -0.5f);
+	glColor3f (1.f, 1.f, 1.f);
+	glcScale (10.f, 10.f);
+	glcRenderString ("Hello");
+
+
+ 	glutSwapBuffers ();
 }
 
 void reshape(int x, int y)
@@ -131,7 +140,7 @@ void reshape(int x, int y)
 	glViewport (0, 0, (GLsizei)x, (GLsizei)y);
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
-	gluPerspective (45.0f, ASP, 1.0, 1000.0);
+	gluPerspective (45.f, ASP, 0.1, 100.);
 
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity ();
@@ -142,12 +151,6 @@ void keyboard(unsigned char key, int x, int y)
 	switch (key) {
 		case 27:
 			exit(0);
-			break;
-		case 45:
-			fix--;
-			break;
-		case 61:
-			fix++;
 			break;
 	}
 	glutPostRedisplay ();
@@ -211,6 +214,7 @@ motion (int x, int y)
 
 int main(int argc, char **argv)
 {
+	GLint glc_ctx;
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize (600, 600);
@@ -220,12 +224,15 @@ int main(int argc, char **argv)
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
+	
+	glc_ctx = glcGenContext ();
+	glcContext (glc_ctx);
+	glcRenderStyle (GLC_TRIANGLE);
 
-	nkkbWire (&wire, 3, 3);
+	nkkbWire (&wire, 5, 5);
 	nkkbResize (&wire, 10, 10);
-	nkkbGenPolly (&wire, 1, 1);
+	nkkbGenPolly (&wire, 10, 10);
 	nkkbGenPoints (&wire);
-	fix = wire.polly->size;
 	glutMainLoop();
 	return 0;
 }
