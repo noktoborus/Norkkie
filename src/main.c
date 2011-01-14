@@ -19,6 +19,16 @@ struct colorRGBA_t
 	0.0f, 0.0f, 0.0f, 0.0f
 };
 
+struct scrn_info_t
+{
+	float width;
+	float height;
+	float aspect;
+} scrn_info =
+{
+	0.f, 0.f, 0.f
+};
+
 struct scrn_change_t
 {
 	char calc;
@@ -33,25 +43,102 @@ struct scrn_change_t
 	{0.0f, 0.0f}
 };
 
+struct model_t
+{
+	struct NKKBVertex_t pos;
+	struct NKKBWire_t wire;
+};
+
+#define SELECT_NONE		-1
+#define SELECT_MODEL	0
+#define SELECT_WIRE		1
+#define SELECT_NODE		2
+#define SELECT_COUNT_S	3
+struct _select_t
+{
+	uint8_t xyz; // for movements
+	size_t sz; // size of nums
+	size_t *nums;
+};
+
+struct select_t
+{
+	struct _select_t sel[SELECT_COUNT_S];
+	int current; // select current (from SELECT_NONE to SELECT_COUNT_S)
+} root_sel =
+{
+	{
+		{0, 0, NULL},
+		{0, 0, NULL},
+		{0, 0, NULL},
+	},
+	0
+};
+
 struct NKKBWire_t wire;
 
-void display(void)
+uint64_t glpe_inters = 0;
+uint64_t glcpe_inters = 0;
+inline static void
+glpe ()
+{
+	GLenum er = glGetError ();
+	if (er != GL_NO_ERROR)
+	{
+		fprintf (stderr, "OpenGL: %d -> %s (%lld)\n", er, gluErrorString (er),
+				glpe_inters);
+	}
+	glpe_inters++;
+}
+inline static void
+glcpe ()
+{
+	GLenum er = glcGetError ();
+	char *s = "uncow";
+	if (er != GLC_NONE)
+	{
+		switch (er)
+		{
+			case GLC_PARAMETER_ERROR:
+				s = "error in parameter";
+				break;
+			case GLC_RESOURCE_ERROR:
+				s = "defect resource";
+				break;
+			case GLC_STATE_ERROR:
+				s = "state error";
+				break;
+		}
+		fprintf (stderr, "GLC: %d -> %s (%lld)\n", er, s, glcpe_inters);
+	}
+	glcpe_inters++;
+}
+
+void
+display(void)
 {
 	size_t x;
 	float cpos[3] = {0.f, 0.f, 0.f};
 	float npos[3] = {0.f, 0.f, 0.f};
+	float scale2[2] = {0.f, 0.f};
+	if (!scrn_info.width || !scrn_info.height) return;
 	cpos[0] = 0.f;
 	npos[0] = 0.f;
 	x = 0;
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// zero matrix
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
+	gluPerspective (45.f, scrn_info.aspect, .1, 5000.);
+	glMatrixMode (GL_MODELVIEW);
+	glLoadIdentity ();
+
 	glTranslatef (0.0f, 0.0f, scrn_change.distance);
 	// rotate screen
 	glRotatef (scrn_change.angle[1], 1.0, 0.0, 0.0);
 	glRotatef (scrn_change.angle[0], 0.0, 1.0, 0.0);
 	// draw screen
-	glPolygonMode (GL_FRONT, GL_LINE);
+	//glPolygonMode (GL_FRONT, GL_LINE);
 #if 0
 	/*
 	glBegin (GL_TRIANGLE_STRIP);
@@ -119,31 +206,54 @@ void display(void)
 	glEnd ();
 #endif
 		glBegin(GL_TRIANGLES);						// Drawing Using Triangles
-		glVertex3f( 0.0f, 1.0f, 0.0f);				// Top
-		glVertex3f(-1.0f,-1.0f, 0.0f);				// Bottom Left
-		glVertex3f( 1.0f,-1.0f, 0.0f);				// Bottom Right
+		glVertex3f(0.0f, 1.0f, 0.0f);				// Top
+		glVertex3f(-1.0f, -1.0f, 0.0f);				// Bottom Left
+		glVertex3f(1.0f, -1.0f, 0.0f);				// Bottom Right
 	glEnd();							// Finished Drawing The Triangle
+
+	// draw interface
+	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
-	glTranslatef (0.f, 0.f, -1.f);
+	glOrtho (0., scrn_info.width, -scrn_info.height, 0., 1.0, -1.0);
+	glMatrixMode (GL_MODELVIEW);
+	glLoadIdentity ();
+
+	scale2[0] = scrn_info.width * 0.02f;
+	scale2[1] = scrn_info.height * 0.02f * scrn_info.aspect;
+	if (scale2[0] < 10.f)
+	{
+		scale2[0] = 10.f;
+		scale2[1] = 10.f;
+	}
+
+	glTranslatef (0.f, -scale2[1], 0.f);
+	
+	glBegin (GL_QUADS);
+		glVertex2f (-3.f, -3.f);
+		glVertex2f (scrn_info.width, -3.f);
+		glVertex2f (scrn_info.width, scale2[1]);
+		glVertex2f (-3.f, scale2[1]);
+	glEnd ();
+
+	glScalef (scale2[0], scale2[1], 0.f);
+	//glTranslatef (0.f, 0.f, -1.f);
+	//glTranslatef (-20.f, -20.f, -50.f);
 	//glScalef (-0.5f, -0.5f, -0.5f);
 	glColor3f (1.f, 1.f, 1.f);
-	glcScale (10.f, 10.f);
 	glcRenderString ("Hello");
-
+	glcRenderString (" Additional");
 
  	glutSwapBuffers ();
+	glpe ();
+	glcpe ();
 }
 
 void reshape(int x, int y)
 {
-	GLdouble ASP = (GLdouble)x / (GLdouble)y;
+	scrn_info.aspect = x / (float)y;
+	scrn_info.width = (float)x;
+	scrn_info.height = (float)y;
 	glViewport (0, 0, (GLsizei)x, (GLsizei)y);
-	glMatrixMode (GL_PROJECTION);
-	glLoadIdentity ();
-	gluPerspective (45.f, ASP, 0.1, 100.);
-
-	glMatrixMode (GL_MODELVIEW);
-	glLoadIdentity ();
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -215,6 +325,7 @@ motion (int x, int y)
 int main(int argc, char **argv)
 {
 	GLint glc_ctx;
+	GLint glc_font;
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize (600, 600);
@@ -227,8 +338,14 @@ int main(int argc, char **argv)
 	
 	glc_ctx = glcGenContext ();
 	glcContext (glc_ctx);
-	glcRenderStyle (GLC_TRIANGLE);
-
+	glc_font = glcGenFontID ();
+	glc_font = glcNewFontFromFamily (glc_font, "DejaVu Sans Mono");
+	glcFont (glc_font);
+	glcFontFace (glc_font, "Regular");
+	
+	//glcRenderStyle (GLC_LINE); /* not work on mesa-gallium? */
+	glcRenderStyle (GLC_TEXTURE);
+	glEnable (GL_TEXTURE_2D); /* for GLC_TEXTURE */
 	nkkbWire (&wire, 5, 5);
 	nkkbResize (&wire, 10, 10);
 	nkkbGenPolly (&wire, 10, 10);
