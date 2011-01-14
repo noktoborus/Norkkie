@@ -7,6 +7,7 @@
 #include <GL/glc.h>
 #include <math.h>
 #include "nurbs.h"
+#include "msel.h"
 
 struct colorRGBA_t
 {
@@ -49,32 +50,6 @@ struct model_t
 	struct NKKBWire_t wire;
 };
 
-#define SELECT_NONE		-1
-#define SELECT_MODEL	0
-#define SELECT_WIRE		1
-#define SELECT_NODE		2
-#define SELECT_COUNT_S	3
-struct _select_t
-{
-	uint8_t xyz; // for movements
-	size_t sz; // size of nums
-	size_t *nums;
-};
-
-struct select_t
-{
-	struct _select_t sel[SELECT_COUNT_S];
-	int current; // select current (from SELECT_NONE to SELECT_COUNT_S)
-} root_sel =
-{
-	{
-		{0, 0, NULL},
-		{0, 0, NULL},
-		{0, 0, NULL},
-	},
-	0
-};
-
 struct NKKBWire_t wire;
 
 uint64_t glpe_inters = 0;
@@ -109,7 +84,7 @@ glcpe ()
 				s = "state error";
 				break;
 		}
-		fprintf (stderr, "GLC: %d -> %s (%lld)\n", er, s, glcpe_inters);
+		fprintf (stderr, "GLC: %0*x -> %s (%lld)\n", 4, er, s, glcpe_inters);
 	}
 	glcpe_inters++;
 }
@@ -245,7 +220,6 @@ display(void)
 
  	glutSwapBuffers ();
 	glpe ();
-	glcpe ();
 }
 
 void reshape(int x, int y)
@@ -341,11 +315,15 @@ int main(int argc, char **argv)
 	glc_font = glcGenFontID ();
 	glc_font = glcNewFontFromFamily (glc_font, "DejaVu Sans Mono");
 	glcFont (glc_font);
-	glcFontFace (glc_font, "Regular");
-	
-	//glcRenderStyle (GLC_LINE); /* not work on mesa-gallium? */
+	glcpe ();
+
+#if 0
+	glcRenderStyle (GLC_LINE); /* not work on mesa-gallium? */
+#else
 	glcRenderStyle (GLC_TEXTURE);
+#endif
 	glEnable (GL_TEXTURE_2D); /* for GLC_TEXTURE */
+
 	nkkbWire (&wire, 5, 5);
 	nkkbResize (&wire, 10, 10);
 	nkkbGenPolly (&wire, 10, 10);

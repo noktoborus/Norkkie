@@ -1,4 +1,5 @@
-CC=colorgcc
+#CC=colorgcc
+#CC=pcc
 LIBS=`pkg-config --libs --cflags gl glu quesoglc` -lglut
 CFLAGS=-g
 
