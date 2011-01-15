@@ -6,18 +6,18 @@
 
 typedef uint8_t NKKBOpt_t;
 #define NKKB_OPT_S0	0
-// select X-axis for `no
+/* select X-axis for `no */
 #define NKKB_OPT_X	(1 << NKKB_OPT_S0)
-// select Y-axis for `no
+/* select Y-axis for `no */
 #define NKKB_OPT_Y	(2 << NKKB_OPT_S0)
 #define NKKB_OPT_M0 (NKKB_OPT_X | NKKB_OPT_Y)
 
 #define NKKB_OPT_S1	(NKKB_OPT_S0 + 2)
-// insert before selected `no
+/* insert before selected `no */
 #define NKKB_OPT_BEFORE	(1 << NKKB_OPT_S1)
-// insert after selected `no
+/* insert after selected `no */
 #define NKKB_OPT_AFTER	(2 << NKKB_OPT_S1)
-// remove selected `no
+/* remove selected `no */
 #define NKKB_OPT_REMOVE	(3 << NKKB_OPT_S1)
 #define NKKB_OPT_M1 (NKKB_OPT_BEFORE | NKKB_OPT_AFTER | NKKB_OPT_REMOVE)
 
@@ -28,31 +28,44 @@ typedef uint8_t NKKBOpt_t;
 
 struct NKKBVertex_t
 {
-	float v[3]; // = {x, y, z}
+	/* {x, y, z} */
+	float v[3];
 };
 
 struct NKKBVertexW_t
 {
-	float v[3]; // = {x, y, z}
-	float w; // weight
+	/* {x, y, z} */
+	float v[3];
+	/* weight */
+	float w;
 };
 
 struct NKKBPolly_t
 {
-	float dimension[2]; // width and height
-	size_t size; // size of array
-	size_t len; // count of points in one line
+	/* width and height */
+	float dimension[2];
+	/* size of array */
+	size_t size;
+	/* count of points in one line */
+	size_t len;
+	/* point to vertex array */
 	struct NKKBVertex_t *s;
 };
 
 struct NKKBWire_t
 {
 	unsigned int errno;
-	float dimension[2]; // width and height
-	size_t size; // overall points count in array
-	size_t len; // len of line (count point in one line)
+	/* width and height */
+	float dimension[2];
+	/* overall points count in array */
+	size_t size;
+	/* len of line (count point in one line) */
+	size_t len;
+	/* point to polly structure */
 	struct NKKBPolly_t *polly;
+	/* point to points array */
 	struct NKKBVertex_t *point;
+	/* point to points+weight array */
 	struct NKKBVertexW_t *wire;
 };
 

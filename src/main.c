@@ -8,7 +8,35 @@
 #include <math.h>
 #include "nurbs.h"
 #include "msel.h"
+#include "msel_func.h"
 
+struct input_node_t
+{
+	/* input string len */
+	size_t strlen;
+	/* current input string (not parsed) */
+	char *input;
+	/* pointer to finded func */
+	struct cmdnode_t *cmd;
+	/* num of current arg in cmd */
+	size_t argn;
+	/* next node */
+	struct input_node_t *next;
+};
+
+struct input_cmds_t
+{
+	struct input_node_t *i;
+	struct input_node_t *c;
+	char *cache;
+} inputs =
+{
+	NULL,
+	NULL,
+	NULL
+};
+
+/* old */
 struct colorRGBA_t
 {
 	float R;
@@ -50,6 +78,53 @@ struct model_t
 	struct NKKBWire_t wire;
 };
 
+/* *** feel select's structs *** */
+struct cmdnode_t __cmdnodes_root[] =
+{
+	{ "s", msel_func_rsel, msel_func_rsel_args },
+};
+
+struct cmdnode_t __cmdnodes_model[] =
+{
+	{ "s", msel_func_msel, msel_func_msel_args },
+	{ "m", msel_func_mmov, msel_func_mmov_args },
+	{ "r", msel_func_mrot, msel_func_mrot_args },
+	{ "+", msel_func_mlist, msel_func_mlist_args },
+	{ "-", msel_func_mlist, msel_func_mlist_args }
+};
+
+struct cmdnode_t __cmdnodes_wire[] =
+{
+	{ "", NULL, NULL }
+};
+
+struct cmdnode_t __cmdnodes_node[] =
+{
+	{ "", NULL, NULL }
+};
+
+struct cmdnode_t _cmdnodes_global[] =
+{
+	{ "r", msel_func_return, NULL, }
+};
+
+struct _select_t _root_sel_s[SELECT_COUNT_S] =
+{
+	{0, 0, NULL, 0, __cmdnodes_root},
+	{0, 0, NULL, 0, __cmdnodes_model},
+	{0, 0, NULL, 0, __cmdnodes_wire},
+	{0, 0, NULL, 0, __cmdnodes_node},
+};
+
+struct select_t root_sel =
+{
+	_root_sel_s,
+	0,
+	1,
+	_cmdnodes_global
+};
+
+/* *** code *** */
 struct NKKBWire_t wire;
 
 uint64_t glpe_inters = 0;
@@ -230,12 +305,30 @@ void reshape(int x, int y)
 	glViewport (0, 0, (GLsizei)x, (GLsizei)y);
 }
 
+void subkey (unsigned char key)
+{
+	if (!inputs.c)
+	{
+		if (!inputs.i)
+		{
+			inputs.i = calloc (1, sizeof (struct input_node_t));
+			if (!inputs.i)
+				return;
+			inputs.c = inputs.i;
+		}
+		else
+			return;
+	}
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
 	switch (key) {
 		case 27:
 			exit(0);
 			break;
+		default:
+			subkey (key);
 	}
 	glutPostRedisplay ();
 }

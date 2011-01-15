@@ -1,8 +1,38 @@
 #ifndef _MSEL_1295020820_
 #define _MSEL_1295020820_
+#include <stdint.h>
+#include <stdlib.h>
 /*
  * Select model
  */
+
+#define SELECT_NONE		-1
+#define SELECT_ROOT		0
+#define SELECT_MODEL	1
+#define SELECT_WIRE		2
+#define SELECT_NODE		3
+#define SELECT_COUNT_S	4
+
+struct _select_t
+{
+	/* for movements */
+	uint8_t xyz;
+	/* size of nums */
+	size_t sz;
+	size_t *nums;
+	size_t cmds_count;
+	struct cmdnode_t *cmds;
+};
+
+struct select_t
+{
+	struct _select_t *sel;
+	/* select current (from SELECT_NONE to SELECT_COUNT_S) */
+	int current;
+	/* global  cmds */
+	size_t cmds_count;
+	struct cmdnode_t *cmds;
+};
 
 #define CMDARGS_TVOID	0
 #define CMDARGS_TSTRING 1
@@ -11,10 +41,11 @@
 #define CMDARGS_TFLOAT	4
 struct cmdargs_t
 {
-	uint32_t key;
-	/* first 3bites: indicate type
+	/*
+	 * first 3bites: indicate type
 	 * last 28bites: size of value (for TSTRING)
 	 */
+	uint32_t key;
 	union
 	{
 		char *cstr;
@@ -26,36 +57,17 @@ struct cmdargs_t
 
 struct cmdnode_t
 {
-	char *tag; /* string tag */
-	void (*ptr) (struct cmdnode_t*); /* pointer to callback func */
-	int wargc; /* want nunber of arguments */
-	struct cmdargs_t *args; /* ptr to args */
-};
-
-#define SELECT_NONE		-1
-#define SELECT_MODEL	0
-#define SELECT_WIRE		1
-#define SELECT_NODE		2
-#define SELECT_COUNT_S	3
-struct _select_t
-{
-	uint8_t xyz; // for movements
-	size_t sz; // size of nums
-	size_t *nums;
-};
-
-struct select_t
-{
-	struct _select_t sel[SELECT_COUNT_S];
-	int current; /* select current (from SELECT_NONE to SELECT_COUNT_S) */
-} root_sel =
-{
-	{
-		{0, 0, NULL},
-		{0, 0, NULL},
-		{0, 0, NULL},
-	},
-	0
+	/* string tag */
+	char *tag;
+	/* pointer to callback func
+	 * 	char *key
+	 * 	size_t num_of_current_layer
+	 * 	struct cmdnode_t *current_node_ptr
+	 * 	struct _select_t *current_layer_ptr
+	 */
+	void (*ptr) (char*, size_t, struct cmdnode_t*, struct _select_t*);
+	/* ptr to args, terminate at TVOID*/
+	struct cmdargs_t *args;
 };
 
 
