@@ -1,0 +1,50 @@
+digraph G {
+	graph [layout=dot rankdir=LR root=root]
+
+	root	[label="Root"]
+	q		[label="quit"]
+	
+	model	[label="Model"]
+	asm		[label="+"]
+	sm		[label="select"]
+	mmov	[label="move"]
+	mdel	[label="delete"]
+	mq		[label="return"]
+
+	wire	[label="Wire"]
+	sw		[label="select"]
+	asw		[label="+"]
+	wmov	[label="move"]
+	wdel	[label="delete"]
+	wq		[label="return"]
+
+	cnode	[label="Node"]
+	sc		[label="select"]
+	asc		[label="+"]
+	cmov	[label="move"]
+	cdel	[label="delete"]
+	cq		[label="return"]
+
+	root -> {q sm}
+	sm -> model
+	
+	model -> {q sw asm mmov mdel mq}
+	asm -> model
+	sw -> wire
+	mmov -> model
+	mdel -> model
+	mq -> root
+
+	wire -> {q sc asw wmov wdel wq}
+	asw -> wire
+	wmov -> wire
+	wdel -> wire
+	wq -> model
+	sc -> cnode
+
+	cnode -> {q asc cmov cdel cq}
+	asc -> cnode
+	cmov -> cnode
+	cdel -> cnode
+	cq -> wire
+}
