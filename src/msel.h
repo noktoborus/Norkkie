@@ -61,12 +61,11 @@ struct cmdnode_t
 	char *tag;
 	size_t taglen;
 	/* pointer to callback func
-	 * 	char *key
-	 * 	size_t num_of_current_layer
 	 * 	struct cmdnode_t *current_node_ptr
+	 * 	size_t num_of_current_layer
 	 * 	struct _select_t *current_layer_ptr
 	 */
-	void (*ptr) (char*, size_t, struct cmdnode_t*, struct _select_t*);
+	void (*ptr) (struct cmdnode_t*, size_t, struct _select_t*);
 	/* ptr to args, terminate at TVOID*/
 	struct cmdargs_t *args;
 };

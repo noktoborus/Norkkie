@@ -16,8 +16,11 @@ struct input_node_t
 	struct cmdnode_t *cmd;
 	/* num of current arg in cmd */
 	size_t argn;
-	/* next node */
+	/* * next/prev node */
+	/* ptr to next node */
 	struct input_node_t *next;
+	/* ptr to last (previous) node */
+	struct input_node_t *prev;
 };
 
 #define INPUT_SZ 256
@@ -34,6 +37,8 @@ struct input_cmds_t
 } inputs =
 {
 	0,
+	NULL,
+	NULL,
 	NULL,
 	NULL
 };
@@ -325,7 +330,13 @@ subkey (unsigned char key)
 			inputs.c = inputs.i;
 		}
 		else
-			return;
+		{
+			inputs.c = calloc (1, sizeof (struct input_node_t));
+			if (!inputs.c)
+				return;
+			inputs.c->prev = inputs.i->prev;
+			inputs.i->prev = inputs.c;
+		}
 	}
 	/* alloc input string */
 	if (!inputs.input)
@@ -357,7 +368,7 @@ subkey (unsigned char key)
 			do
 			{
 				/* skip smallest tags */
-				if (cmd->taglen < inputs.strlen)
+				if (cmd->taglen != inputs.strlen)
 					continue;
 				/* set current tag to find :3 */
 				if (!strncmp (cmd->tag, inputs.input, inputs.strlen))
@@ -370,15 +381,35 @@ subkey (unsigned char key)
 		{
 			do
 			{
-				if (cmd->taglen < inputs.strlen)
+				if (cmd->taglen != inputs.strlen)
 					continue;
 				if (!strncmp (cmd->tag, inputs.input, inputs.strlen))
 					break;
 			}
 			while ((++cmd)->tag);
 		}
-		printf ("I[%d]: %s\n", inputs.strlen, inputs.input);
-		printf ("GTAG[%p]: %s, %p\n", (void*)cmd, cmd->tag, (void*)&cmd->ptr);
+		if (cmd->tag)
+		{
+			/* set current func */
+			inputs.c->cmd = cmd;
+			/* rewind input */
+			inputs.strlen = 0;
+		}
+	}
+	/* test current command */
+	if (inputs.c->cmd)
+	{
+		/* null args count: exec now */
+		if (!inputs.c->cmd->args ||
+				inputs.c->cmd->args[0].key == CMDARGS_TVOID)
+		{
+			/* call */
+			inputs.c->cmd->ptr (inputs.c->cmd, root_sel.cursel,
+					&root_sel.sel[root_sel.cursel]);
+			/* change ptr */
+			inputs.c = NULL;
+		}
+
 	}
 }
 
