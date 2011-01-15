@@ -12,10 +12,6 @@
 
 struct input_node_t
 {
-	/* input string len */
-	size_t strlen;
-	/* current input string (not parsed) */
-	char *input;
 	/* pointer to finded func */
 	struct cmdnode_t *cmd;
 	/* num of current arg in cmd */
@@ -24,14 +20,20 @@ struct input_node_t
 	struct input_node_t *next;
 };
 
+#define INPUT_SZ 256
 struct input_cmds_t
 {
+	/* input string len */
+	size_t strlen;
+	/* current input string (not parsed) */
+	char *input;
+	/* * */
 	struct input_node_t *i;
 	struct input_node_t *c;
 	char *cache;
 } inputs =
 {
-	NULL,
+	0,
 	NULL,
 	NULL
 };
@@ -81,31 +83,34 @@ struct model_t
 /* *** feel select's structs *** */
 struct cmdnode_t __cmdnodes_root[] =
 {
-	{ "s", msel_func_rsel, msel_func_rsel_args },
+	{ "s", 1, msel_func_rsel, msel_func_rsel_args },
+	{ NULL, 0, NULL, NULL }
 };
 
 struct cmdnode_t __cmdnodes_model[] =
 {
-	{ "s", msel_func_msel, msel_func_msel_args },
-	{ "m", msel_func_mmov, msel_func_mmov_args },
-	{ "r", msel_func_mrot, msel_func_mrot_args },
-	{ "+", msel_func_mlist, msel_func_mlist_args },
-	{ "-", msel_func_mlist, msel_func_mlist_args }
+	{ "s", 1, msel_func_msel, msel_func_msel_args },
+	{ "m", 1, msel_func_mmov, msel_func_mmov_args },
+	{ "r", 1, msel_func_mrot, msel_func_mrot_args },
+	{ "+", 1, msel_func_mlist, msel_func_mlist_args },
+	{ "-", 1, msel_func_mlist, msel_func_mlist_args },
+	{ NULL, 0, NULL, NULL }
 };
 
 struct cmdnode_t __cmdnodes_wire[] =
 {
-	{ "", NULL, NULL }
+	{ NULL, 0, NULL, NULL }
 };
 
 struct cmdnode_t __cmdnodes_node[] =
 {
-	{ "", NULL, NULL }
+	{ NULL, 0, NULL, NULL }
 };
 
 struct cmdnode_t _cmdnodes_global[] =
 {
-	{ "r", msel_func_return, NULL, }
+	{ "r", 1, msel_func_return, NULL, },
+	{ NULL, 0, NULL, NULL }
 };
 
 struct _select_t _root_sel_s[SELECT_COUNT_S] =
@@ -305,8 +310,11 @@ void reshape(int x, int y)
 	glViewport (0, 0, (GLsizei)x, (GLsizei)y);
 }
 
-void subkey (unsigned char key)
+void
+subkey (unsigned char key)
 {
+	char *tmp;
+	struct cmdnode_t *cmd;
 	if (!inputs.c)
 	{
 		if (!inputs.i)
@@ -319,9 +327,63 @@ void subkey (unsigned char key)
 		else
 			return;
 	}
+	/* alloc input string */
+	if (!inputs.input)
+	{
+		inputs.input = calloc (INPUT_SZ, sizeof (char));
+		if (!inputs.input)
+			return;
+		inputs.strlen = 0;
+	}
+	else
+	/* resize string */
+	if ((inputs.strlen + 1) % INPUT_SZ < inputs.strlen % INPUT_SZ)
+	{
+		tmp = calloc (inputs.strlen + INPUT_SZ, sizeof (char));
+		if (!tmp)
+			return;
+		memcpy (tmp, (const void*)inputs.input, inputs.strlen);
+		free (inputs.input);
+		inputs.input = tmp;
+	}
+	inputs.input[inputs.strlen] = key;
+	inputs.strlen++;
+	/** current command not set **/
+	if (!inputs.c->cmd)
+	{
+		/* try find in layer space */
+		if ((cmd = root_sel.sel[root_sel.cursel].cmds))
+		{
+			do
+			{
+				/* skip smallest tags */
+				if (cmd->taglen < inputs.strlen)
+					continue;
+				/* set current tag to find :3 */
+				if (!strncmp (cmd->tag, inputs.input, inputs.strlen))
+					break;
+			}
+			while ((++cmd)->tag);
+		}
+		/* try find in global space */
+		if (!(cmd->tag) && (cmd = root_sel.cmds))
+		{
+			do
+			{
+				if (cmd->taglen < inputs.strlen)
+					continue;
+				if (!strncmp (cmd->tag, inputs.input, inputs.strlen))
+					break;
+			}
+			while ((++cmd)->tag);
+		}
+		printf ("I[%d]: %s\n", inputs.strlen, inputs.input);
+		printf ("GTAG[%p]: %s, %p\n", (void*)cmd, cmd->tag, (void*)&cmd->ptr);
+	}
 }
 
-void keyboard(unsigned char key, int x, int y)
+void
+keyboard(unsigned char key, int x, int y)
 {
 	switch (key) {
 		case 27:

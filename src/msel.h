@@ -28,7 +28,7 @@ struct select_t
 {
 	struct _select_t *sel;
 	/* select current (from SELECT_NONE to SELECT_COUNT_S) */
-	int current;
+	int cursel;
 	/* global  cmds */
 	size_t cmds_count;
 	struct cmdnode_t *cmds;
@@ -59,6 +59,7 @@ struct cmdnode_t
 {
 	/* string tag */
 	char *tag;
+	size_t taglen;
 	/* pointer to callback func
 	 * 	char *key
 	 * 	size_t num_of_current_layer
