@@ -10,15 +10,16 @@ input_filter (char type, unsigned char in)
 			return 0;
 		case FINPUT_TFLOAT:
 			if (in == '.')
-				return true;
+				return 0;
 		case FINPUT_TSINT:
 			if (in == '-')
-				return true;
+				return 0;
 		case FINPUT_TUINT:
 			if (in == '+' || (in >= '0' && in <= '9'))
-				return true;
+				return 0;
 		case FINPUT_TVOID:
 			/* allways false ;3 */
+			break;
 	};
 	return 1;
 }

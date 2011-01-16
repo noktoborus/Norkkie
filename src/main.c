@@ -32,14 +32,18 @@ struct input_cmds_t
 	size_t strlen;
 	/* current input string (not parsed) */
 	char *input;
+	/* out if place char in input */
+	char failch;
 	/* * */
 	struct input_node_t *i;
 	struct input_node_t *c;
 	char *cache;
 } inputs =
 {
+	FINPUT_TSTRING,
 	0,
 	NULL,
+	'\0',
 	NULL,
 	NULL,
 	NULL
@@ -309,6 +313,12 @@ display(void)
 		inputs.input[inputs.strlen] = '\0';
 		glcRenderString (inputs.input);
 	}
+	if (inputs.failch)
+	{
+		glColor3f (1.0f, 1.f, 0.f);
+		glcRenderChar (inputs.failch);
+	}
+
 
  	glutSwapBuffers ();
 	glpe ();
@@ -329,7 +339,6 @@ unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
 	 * 	string *in with length len in struct *dst
 	 */
 	size_t shift = 0;
-	printf ("prepare[%d]: (%d) %s\n", dst->type, len, in);
 	switch (dst->type)
 	{
 		case FINPUT_TVOID:
@@ -360,14 +369,11 @@ unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
 			while (len--)
 			{
 				if (in[len] >= '0' && in[len] <= '9')
-				{
 					dst->v.uint += (in[len] - '0') * pow (10, shift++);
-					printf ("S#%d -> [%c] %u\n", len, in[len], dst->v.uint);
-				}
 			}
 			break;
 		case FINPUT_TFLOAT:
-			dst->v.flt = 0;
+			dst->v.flt = 0.f;
 			break;
 		default:
 			return 1;
@@ -380,6 +386,44 @@ subkey (unsigned char key)
 {
 	char *tmp;
 	struct cmdnode_t *cmd;
+	/* test ptr call */
+	if (inputs.type != FINPUT_TSTRING && (!inputs.c || !inputs.c->cmd))
+		inputs.type = FINPUT_TSTRING;
+
+	/* test control symbols */
+	if (key == 127)
+	{
+		/* its <DEL> */
+		if (inputs.failch)
+		{
+			inputs.failch = '\0';
+		}
+		else
+		if (inputs.strlen)
+		{
+			inputs.strlen--;
+		}
+		else
+		if (inputs.c)
+		{
+			/* TODO: raise from args last line before remove call ptr */
+			/* remove current call pointer */
+			inputs.c->argn = 0;
+			inputs.c->cmd = NULL;
+			/* TODO: call split */
+		}
+		return;
+	}
+	else
+	/* ignore ',' in start of line and over characters */
+	if ((!inputs.strlen && key == ',') ||
+			(key != ',' && input_filter (inputs.type, key)))
+	{
+		inputs.failch = key;
+		return;
+	}
+
+	/* test struct input_cmds_t */
 	if (!inputs.c)
 	{
 		if (!inputs.i)
@@ -398,6 +442,7 @@ subkey (unsigned char key)
 			inputs.i->prev = inputs.c;
 		}
 	}
+
 	/* alloc input string */
 	if (!inputs.input)
 	{
@@ -405,29 +450,6 @@ subkey (unsigned char key)
 		if (!inputs.input)
 			return;
 		inputs.strlen = 0;
-	}
-	else
-	/* fix line then DEL is used */
-	if (key == 127)
-	{
-		if (inputs.strlen)
-		{
-			inputs.strlen--;
-		}
-		else
-		{
-			/* remove current call ptr */
-			inputs.c->argn = 0;
-			inputs.c->cmd = NULL;
-			/* TODO: call split */
-		}
-		return;
-	}
-	else
-	/* ignore ',' in start of line and all not-printable chars*/
-	if ((!inputs.strlen && key == ','))
-	{
-		return;
 	}
 	else
 	/* resize string */
@@ -440,8 +462,13 @@ subkey (unsigned char key)
 		free (inputs.input);
 		inputs.input = tmp;
 	}
+
+	/* add new char */
 	inputs.input[inputs.strlen] = key;
 	inputs.strlen++;
+	/* free error */
+	inputs.failch = '\0';
+
 	/** current command not set **/
 	if (!inputs.c->cmd)
 	{
@@ -450,7 +477,7 @@ subkey (unsigned char key)
 		{
 			do
 			{
-				/* skip smallest tags */
+				/* skip smallest or biggest tags */
 				if (cmd->taglen != inputs.strlen)
 					continue;
 				/* set current tag to find :3 */
@@ -512,6 +539,12 @@ subkey (unsigned char key)
 			}
 			/* change ptr */
 			inputs.c = NULL;
+		}
+		else
+		/* set input type */
+		if (inputs.c->cmd->args)
+		{
+			inputs.type = inputs.c->cmd->args[inputs.c->argn].type;
 		}
 	}
 }

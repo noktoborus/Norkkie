@@ -3,8 +3,9 @@ LIBS=`pkg-config --libs --cflags gl glu quesoglc` -lglut
 CFLAGS=-g
 
 BIN=./eee
-SRC=src/main.c src/nurbs.c src/msel_func*.c
-SRCH=src/nurbs.h src/msel.h src/msel_func.h
+SRC=src/main.c src/nurbs.c src/msel_func.c src/msel_func_root.c\
+	src/msel_func_model.c src/input.c
+SRCH=src/nurbs.h src/msel.h src/msel_func.h src/input.h
 .PHONY: all
 
 all: ${BIN}

@@ -4,7 +4,7 @@
 struct cmdargs_t msel_func_msel_args[] =
 {
 	{FINPUT_TUINT, 0, {0}},
-	{FINOUT_TVOID, 0, {0}},
+	{FINPUT_TVOID, 0, {0}},
 };
 
 struct cmdargs_t msel_func_msop_args[] =
