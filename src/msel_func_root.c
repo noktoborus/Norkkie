@@ -3,8 +3,8 @@
 
 struct cmdargs_t msel_func_rsel_args[] =
 {
-	{CMDARGS_TUINT, {0}},
-	{CMDARGS_TVOID, {0}},
+	{CMDARGS_TUINT, 0, {0}},
+	{CMDARGS_TVOID, 0, {0}},
 };
 
 #include <stdio.h>

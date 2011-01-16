@@ -41,11 +41,10 @@ struct select_t
 #define CMDARGS_TFLOAT	4
 struct cmdargs_t
 {
-	/*
-	 * first 3bites: indicate type
-	 * last 28bites: size of value (for TSTRING)
-	 */
-	uint32_t key;
+	/* set to _TVOID, _TSTRING, etc */
+	char type;
+	/* length for TSTRING */
+	size_t len;
 	union
 	{
 		char *cstr;

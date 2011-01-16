@@ -3,27 +3,27 @@
 /* model layer */
 struct cmdargs_t msel_func_msel_args[] =
 {
-	{0, {0}}
+	{CMDARGS_TVOID, 0, {0}}
 };
 
 struct cmdargs_t msel_func_mdel_args[] =
 {
-	{0, {0}}
+	{CMDARGS_TVOID, 0, {0}}
 };
 
 struct cmdargs_t msel_func_mlist_args[] =
 {
-	{0, {0}}
+	{CMDARGS_TVOID, 0, {0}}
 };
 
 struct cmdargs_t msel_func_mmov_args[] =
 {
-	{0, {0}}
+	{CMDARGS_TVOID, 0, {0}}
 };
 
 struct cmdargs_t msel_func_mrot_args[] =
 {
-	{0, {0}}
+	{CMDARGS_TVOID, 0, {0}}
 };
 
 void

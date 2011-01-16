@@ -1,5 +1,6 @@
 #define _BSD_SOURCE 1
 #define _POSIX_SOURCE 1
+#define _XOPEN_SOURCE 1
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -324,7 +325,50 @@ unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
 	/* prepare argument for call from
 	 * 	string *in with length len in struct *dst
 	 */
-	printf ("prepare[%d]: (%d) %s\n", dst->key, len, in);
+	size_t shift = 0;
+	printf ("prepare[%d]: (%d) %s\n", dst->type, len, in);
+	switch (dst->type)
+	{
+		case CMDARGS_TVOID:
+			break;
+		case CMDARGS_TSTRING:
+			/* free old value */
+			if (dst->v.cstr)
+				free (dst->v.cstr);
+			/* copy new */
+			dst->v.cstr = strdup (in);
+			if (!dst->v.cstr)
+				return 1;
+			dst->len = len;
+			break;
+		case CMDARGS_TSINT:
+			dst->v.sint = 0;
+			while (len--)
+			{
+				if (in[len] == '-')
+					dst->v.sint *= -1;
+				else
+				if (in[len] >= '0' && in[len] <= '9')
+					dst->v.sint += (in[len] - '0') * pow (10, shift++);
+			}
+			break;
+		case CMDARGS_TUINT:
+			dst->v.uint = 0;
+			while (len--)
+			{
+				if (in[len] >= '0' && in[len] <= '9')
+				{
+					dst->v.uint += (in[len] - '0') * pow (10, shift++);
+					printf ("S#%d -> [%c] %u\n", len, in[len], dst->v.uint);
+				}
+			}
+			break;
+		case CMDARGS_TFLOAT:
+			dst->v.flt = 0;
+			break;
+		default:
+			return 1;
+	};
 	return 0;
 }
 
@@ -441,10 +485,10 @@ subkey (unsigned char key)
 		if(inputs.input[inputs.strlen - 1] == ',')
 		{
 			/* remove ',' from string */
-			inputs.input[inputs.strlen - 1] = '\0';
+			inputs.input[--inputs.strlen] = '\0';
 			/* unpack args */
 			if (!unpack_cmdarg (&inputs.c->cmd->args[inputs.c->argn],
-					inputs.input, inputs.strlen - 2))
+					inputs.input, inputs.strlen))
 			{
 				/* if unpack is ok */
 				inputs.c->argn++;
@@ -455,7 +499,7 @@ subkey (unsigned char key)
 
 		/* null args count or complite: exec now */
 		if (!inputs.c->cmd->args ||
-				inputs.c->cmd->args[inputs.c->argn].key == CMDARGS_TVOID)
+				inputs.c->cmd->args[inputs.c->argn].type == CMDARGS_TVOID)
 		{
 			/* call */
 			if (inputs.c->cmd->merge)
