@@ -26,6 +26,8 @@ struct input_node_t
 #define INPUT_SZ 256
 struct input_cmds_t
 {
+	/* want type to input */
+	char type;
 	/* input string len */
 	size_t strlen;
 	/* current input string (not parsed) */
@@ -330,9 +332,9 @@ unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
 	printf ("prepare[%d]: (%d) %s\n", dst->type, len, in);
 	switch (dst->type)
 	{
-		case CMDARGS_TVOID:
+		case FINPUT_TVOID:
 			break;
-		case CMDARGS_TSTRING:
+		case FINPUT_TSTRING:
 			/* free old value */
 			if (dst->v.cstr)
 				free (dst->v.cstr);
@@ -342,7 +344,7 @@ unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
 				return 1;
 			dst->len = len;
 			break;
-		case CMDARGS_TSINT:
+		case FINPUT_TSINT:
 			dst->v.sint = 0;
 			while (len--)
 			{
@@ -353,7 +355,7 @@ unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
 					dst->v.sint += (in[len] - '0') * pow (10, shift++);
 			}
 			break;
-		case CMDARGS_TUINT:
+		case FINPUT_TUINT:
 			dst->v.uint = 0;
 			while (len--)
 			{
@@ -364,7 +366,7 @@ unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
 				}
 			}
 			break;
-		case CMDARGS_TFLOAT:
+		case FINPUT_TFLOAT:
 			dst->v.flt = 0;
 			break;
 		default:
@@ -500,7 +502,7 @@ subkey (unsigned char key)
 
 		/* null args count or complite: exec now */
 		if (!inputs.c->cmd->args ||
-				inputs.c->cmd->args[inputs.c->argn].type == CMDARGS_TVOID)
+				inputs.c->cmd->args[inputs.c->argn].type == FINPUT_TVOID)
 		{
 			/* call */
 			if (inputs.c->cmd->merge)

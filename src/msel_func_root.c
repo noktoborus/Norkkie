@@ -3,13 +3,13 @@
 
 struct cmdargs_t msel_func_radd_args[] =
 {
-	{CMDARGS_TVOID, 0, {0}}
+	{FINPUT_TVOID, 0, {0}}
 };
 
 struct cmdargs_t msel_func_rsel_args[] =
 {
-	{CMDARGS_TUINT, 0, {0}},
-	{CMDARGS_TVOID, 0, {0}},
+	{FINPUT_TUINT, 0, {0}},
+	{FINPUT_TVOID, 0, {0}},
 };
 
 void

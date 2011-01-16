@@ -2,6 +2,7 @@
 #define _MSEL_1295020820_
 #include <stdint.h>
 #include <stdlib.h>
+#include "input.h"
 /*
  * Select model
  */
@@ -34,14 +35,9 @@ struct select_t
 	struct cmdnode_t *cmds;
 };
 
-#define CMDARGS_TVOID	0
-#define CMDARGS_TSTRING 1
-#define CMDARGS_TSINT	2
-#define CMDARGS_TUINT	3
-#define CMDARGS_TFLOAT	4
 struct cmdargs_t
 {
-	/* set to _TVOID, _TSTRING, etc */
+	/* set to FINPUT_TVOID, FINPUT_TSTRING (from input.h), etc */
 	char type;
 	/* length for TSTRING */
 	size_t len;

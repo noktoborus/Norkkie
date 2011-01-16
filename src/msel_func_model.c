@@ -3,31 +3,31 @@
 /* model layer */
 struct cmdargs_t msel_func_msel_args[] =
 {
-	{CMDARGS_TUINT, 0, {0}},
-	{CMDARGS_TVOID, 0, {0}},
+	{FINPUT_TUINT, 0, {0}},
+	{FINOUT_TVOID, 0, {0}},
 };
 
 struct cmdargs_t msel_func_msop_args[] =
 {
-	{CMDARGS_TUINT, 0, {0}},
-	{CMDARGS_TVOID, 0, {0}},
+	{FINPUT_TUINT, 0, {0}},
+	{FINPUT_TVOID, 0, {0}},
 };
 
 struct cmdargs_t msel_func_mdel_args[] =
 {
-	{CMDARGS_TVOID, 0, {0}}
+	{FINPUT_TVOID, 0, {0}}
 };
 
 struct cmdargs_t msel_func_mmov_args[] =
 {
-	{CMDARGS_TFLOAT, 0, {0}},
-	{CMDARGS_TVOID, 0, {0}}
+	{FINPUT_TFLOAT, 0, {0}},
+	{FINPUT_TVOID, 0, {0}}
 };
 
 struct cmdargs_t msel_func_mrot_args[] =
 {
-	{CMDARGS_TFLOAT, 0, {0}},
-	{CMDARGS_TVOID, 0, {0}},
+	{FINPUT_TFLOAT, 0, {0}},
+	{FINPUT_TVOID, 0, {0}},
 };
 
 void
