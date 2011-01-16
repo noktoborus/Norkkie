@@ -324,6 +324,7 @@ unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
 	/* prepare argument for call from
 	 * 	string *in with length len in struct *dst
 	 */
+	printf ("prepare[%d]: (%d) %s\n", dst->key, len, in);
 	return 0;
 }
 
@@ -359,6 +360,29 @@ subkey (unsigned char key)
 		inputs.strlen = 0;
 	}
 	else
+	/* fix line then DEL is used */
+	if (key == 127)
+	{
+		if (inputs.strlen)
+		{
+			inputs.strlen--;
+		}
+		else
+		{
+			/* remove current call ptr */
+			inputs.c->argn = 0;
+			inputs.c->cmd = NULL;
+			/* TODO: call split */
+		}
+		return;
+	}
+	else
+	/* ignore ',' in start of line and all not-printable chars*/
+	if ((!inputs.strlen && key == ','))
+	{
+		return;
+	}
+	else
 	/* resize string */
 	if ((inputs.strlen + 1) % INPUT_SZ < inputs.strlen % INPUT_SZ)
 	{
@@ -369,9 +393,6 @@ subkey (unsigned char key)
 		free (inputs.input);
 		inputs.input = tmp;
 	}
-	/* ignore ',' key in start of cmdline */
-	if (!inputs.strlen && key == ',')
-		return;
 	inputs.input[inputs.strlen] = key;
 	inputs.strlen++;
 	/** current command not set **/
@@ -427,6 +448,8 @@ subkey (unsigned char key)
 			{
 				/* if unpack is ok */
 				inputs.c->argn++;
+				/* rewind */
+				inputs.strlen = 0;
 			}
 		}
 
