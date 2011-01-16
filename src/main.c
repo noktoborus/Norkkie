@@ -409,6 +409,10 @@ subkey (unsigned char key)
 			/* change ptr */
 			inputs.c = NULL;
 		}
+		/* complete args */
+		else
+		{
+		}
 
 	}
 }
