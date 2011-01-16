@@ -88,34 +88,34 @@ struct model_t
 /* *** feel select's structs *** */
 struct cmdnode_t __cmdnodes_root[] =
 {
-	{ "s", 1, msel_func_rsel, msel_func_rsel_args },
-	{ NULL, 0, NULL, NULL }
+	{ "s", 1, msel_func_rsel, NULL, msel_func_rsel_args },
+	{ NULL, 0, NULL, NULL, NULL }
 };
 
 struct cmdnode_t __cmdnodes_model[] =
 {
-	{ "s", 1, msel_func_msel, msel_func_msel_args },
-	{ "m", 1, msel_func_mmov, msel_func_mmov_args },
-	{ "r", 1, msel_func_mrot, msel_func_mrot_args },
-	{ "+", 1, msel_func_mlist, msel_func_mlist_args },
-	{ "-", 1, msel_func_mlist, msel_func_mlist_args },
+	{ "s", 1, msel_func_msel, NULL, msel_func_msel_args },
+	{ "m", 1, msel_func_mmov, NULL, msel_func_mmov_args },
+	{ "r", 1, msel_func_mrot, NULL, msel_func_mrot_args },
+	{ "+", 1, msel_func_mlist, NULL, msel_func_mlist_args },
+	{ "-", 1, msel_func_mlist, NULL, msel_func_mlist_args },
 	{ NULL, 0, NULL, NULL }
 };
 
 struct cmdnode_t __cmdnodes_wire[] =
 {
-	{ NULL, 0, NULL, NULL }
+	{ NULL, 0, NULL, NULL, NULL }
 };
 
 struct cmdnode_t __cmdnodes_node[] =
 {
-	{ NULL, 0, NULL, NULL }
+	{ NULL, 0, NULL, NULL, NULL }
 };
 
 struct cmdnode_t _cmdnodes_global[] =
 {
-	{ "r", 1, msel_func_return, NULL, },
-	{ NULL, 0, NULL, NULL }
+	{ "r", 1, msel_func_return, NULL, NULL },
+	{ NULL, 0, NULL, NULL, NULL }
 };
 
 struct _select_t _root_sel_s[SELECT_COUNT_S] =
@@ -300,8 +300,11 @@ display(void)
 	//glTranslatef (-20.f, -20.f, -50.f);
 	//glScalef (-0.5f, -0.5f, -0.5f);
 	glColor3f (1.f, 1.f, 1.f);
-	glcRenderString ("Hello");
-	glcRenderString (" Additional");
+	if (inputs.input)
+	{
+		inputs.input[inputs.strlen] = '\0';
+		glcRenderString (inputs.input);
+	}
 
  	glutSwapBuffers ();
 	glpe ();
@@ -313,6 +316,15 @@ void reshape(int x, int y)
 	scrn_info.width = (float)x;
 	scrn_info.height = (float)y;
 	glViewport (0, 0, (GLsizei)x, (GLsizei)y);
+}
+
+int
+unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
+{
+	/* prepare argument for call from
+	 * 	string *in with length len in struct *dst
+	 */
+	return 0;
 }
 
 void
@@ -357,6 +369,9 @@ subkey (unsigned char key)
 		free (inputs.input);
 		inputs.input = tmp;
 	}
+	/* ignore ',' key in start of cmdline */
+	if (!inputs.strlen && key == ',')
+		return;
 	inputs.input[inputs.strlen] = key;
 	inputs.strlen++;
 	/** current command not set **/
@@ -392,6 +407,8 @@ subkey (unsigned char key)
 		{
 			/* set current func */
 			inputs.c->cmd = cmd;
+			/* avoid possible errors :3 */
+			inputs.c->argn = 0;
 			/* rewind input */
 			inputs.strlen = 0;
 		}
@@ -399,21 +416,33 @@ subkey (unsigned char key)
 	/* test current command */
 	if (inputs.c->cmd)
 	{
-		/* null args count: exec now */
+		/* if it end of args */
+		if(inputs.input[inputs.strlen - 1] == ',')
+		{
+			/* remove ',' from string */
+			inputs.input[inputs.strlen - 1] = '\0';
+			/* unpack args */
+			if (!unpack_cmdarg (&inputs.c->cmd->args[inputs.c->argn],
+					inputs.input, inputs.strlen - 2))
+			{
+				/* if unpack is ok */
+				inputs.c->argn++;
+			}
+		}
+
+		/* null args count or complite: exec now */
 		if (!inputs.c->cmd->args ||
-				inputs.c->cmd->args[0].key == CMDARGS_TVOID)
+				inputs.c->cmd->args[inputs.c->argn].key == CMDARGS_TVOID)
 		{
 			/* call */
-			inputs.c->cmd->ptr (inputs.c->cmd, root_sel.cursel,
-					&root_sel.sel[root_sel.cursel]);
+			if (inputs.c->cmd->merge)
+			{
+				inputs.c->cmd->merge (inputs.c->cmd, root_sel.cursel,
+						&root_sel.sel[root_sel.cursel]);
+			}
 			/* change ptr */
 			inputs.c = NULL;
 		}
-		/* complete args */
-		else
-		{
-		}
-
 	}
 }
 

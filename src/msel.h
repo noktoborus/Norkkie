@@ -60,12 +60,16 @@ struct cmdnode_t
 	/* string tag */
 	char *tag;
 	size_t taglen;
-	/* pointer to callback func
+	/* **
+	 * pointers to callback func
 	 * 	struct cmdnode_t *current_node_ptr
 	 * 	size_t num_of_current_layer
 	 * 	struct _select_t *current_layer_ptr
 	 */
-	void (*ptr) (struct cmdnode_t*, size_t, struct _select_t*);
+	/*  merge arguments and object */
+	void (*merge) (struct cmdnode_t*, size_t, struct _select_t*);
+	/*  discard previous `merge call */
+	void (*split) (struct cmdnode_t*, size_t, struct _select_t*);
 	/* ptr to args, terminate at TVOID*/
 	struct cmdargs_t *args;
 };
