@@ -1,6 +1,5 @@
 #define _BSD_SOURCE 1
 #define _POSIX_SOURCE 1
-#define _XOPEN_SOURCE 1
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -89,6 +88,7 @@ struct model_t
 /* *** feel select's structs *** */
 struct cmdnode_t __cmdnodes_root[] =
 {
+	{ "a", 1, msel_func_radd, NULL, msel_func_radd_args },
 	{ "s", 1, msel_func_rsel, NULL, msel_func_rsel_args },
 	{ NULL, 0, NULL, NULL, NULL }
 };
@@ -98,8 +98,9 @@ struct cmdnode_t __cmdnodes_model[] =
 	{ "s", 1, msel_func_msel, NULL, msel_func_msel_args },
 	{ "m", 1, msel_func_mmov, NULL, msel_func_mmov_args },
 	{ "r", 1, msel_func_mrot, NULL, msel_func_mrot_args },
-	{ "+", 1, msel_func_mlist, NULL, msel_func_mlist_args },
-	{ "-", 1, msel_func_mlist, NULL, msel_func_mlist_args },
+	{ "d", 1, msel_func_mdel, NULL, msel_func_mdel_args },
+	{ "+", 1, msel_func_msadd, NULL, msel_func_msop_args },
+	{ "-", 1, msel_func_msdel, NULL, msel_func_msop_args },
 	{ NULL, 0, NULL, NULL }
 };
 
