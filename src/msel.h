@@ -38,7 +38,7 @@ struct select_t
 struct cmdargs_t
 {
 	/* set to FINPUT_TVOID, FINPUT_TSTRING (from input.h), etc */
-	char type;
+	int type;
 	/* length for TSTRING */
 	size_t len;
 	union

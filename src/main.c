@@ -27,7 +27,7 @@ struct input_node_t
 struct input_cmds_t
 {
 	/* want type to input */
-	char type;
+	int type;
 	/* input string len */
 	size_t strlen;
 	/* current input string (not parsed) */
@@ -158,6 +158,7 @@ glpe ()
 	}
 	glpe_inters++;
 }
+
 inline static void
 glcpe ()
 {
@@ -295,7 +296,7 @@ display(void)
 	}
 
 	glTranslatef (0.f, -scale2[1], 0.f);
-	
+	glPushMatrix ();
 	glBegin (GL_QUADS);
 		glVertex2f (-3.f, -3.f);
 		glVertex2f (scrn_info.width, -3.f);
@@ -304,9 +305,6 @@ display(void)
 	glEnd ();
 
 	glScalef (scale2[0], scale2[1], 0.f);
-	//glTranslatef (0.f, 0.f, -1.f);
-	//glTranslatef (-20.f, -20.f, -50.f);
-	//glScalef (-0.5f, -0.5f, -0.5f);
 	glColor3f (1.f, 1.f, 1.f);
 	if (inputs.input)
 	{
@@ -318,8 +316,37 @@ display(void)
 		glColor3f (1.0f, 1.f, 0.f);
 		glcRenderChar (inputs.failch);
 	}
+	glPopMatrix ();
 
-
+	glTranslatef (0.f, -scale2[1], 0.f);
+	glPushMatrix ();
+	glScalef (scale2[0], scale2[1], 0.f);
+	if (inputs.c && inputs.c->cmd)
+	{
+		glColor3f (1.f, 1.f, 1.f);
+		glcRenderString (inputs.c->cmd->tag);
+		glcRenderChar ('(');
+		for (x = 0; x < inputs.c->argn; x++)
+		{
+			switch (inputs.c->cmd->args[x].type)
+			{
+				case FINPUT_TVOID:
+					break;
+				case FINPUT_TSTRING:
+					glcRenderString (inputs.c->cmd->args->v.cstr);
+					break;
+				case FINPUT_TSINT:
+				case FINPUT_TUINT:
+				case FINPUT_TFLOAT:
+					break;
+			}
+			glcRenderChar (',');
+		}
+		glcRenderString (
+				input_n2s[inputs.c->cmd->args[inputs.c->argn].type].string);
+		glcRenderChar (')');
+	}
+	glPopMatrix ();
  	glutSwapBuffers ();
 	glpe ();
 }

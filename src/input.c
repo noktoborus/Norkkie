@@ -1,7 +1,16 @@
 #include "input.h"
 
+struct input_n2s_t input_n2s[] =
+{
+	{FINPUT_TVOID, "void"},
+	{FINPUT_TSTRING, "string"},
+	{FINPUT_TSINT, "signed int"},
+	{FINPUT_TUINT, "unsigned int"},
+	{FINPUT_TFLOAT, "float"},
+};
+
 int
-input_filter (char type, unsigned char in)
+input_filter (int type, unsigned char in)
 {
 	switch (type)
 	{
