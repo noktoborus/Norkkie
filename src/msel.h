@@ -22,7 +22,7 @@ struct _select_t
 	size_t sz;
 	size_t *nums;
 	size_t cmds_count;
-	struct cmdnode_t *cmds;
+	struct cmdNode_t *cmds;
 };
 
 struct select_t
@@ -32,10 +32,10 @@ struct select_t
 	int cursel;
 	/* global  cmds */
 	size_t cmds_count;
-	struct cmdnode_t *cmds;
+	struct cmdNode_t *cmds;
 };
 
-struct cmdargs_t
+struct cmdArgs_t
 {
 	/* set to FINPUT_TVOID, FINPUT_TSTRING (from input.h), etc */
 	int type;
@@ -50,25 +50,31 @@ struct cmdargs_t
 	} v;
 };
 
-struct cmdnode_t
+struct cmdNode_t
 {
 	/* string tag */
 	char *tag;
 	size_t taglen;
-	/* **
-	 * pointers to callback func
-	 * 	struct cmdnode_t *current_node_ptr
-	 * 	size_t num_of_current_layer
-	 * 	struct _select_t *current_layer_ptr
-	 */
-	/*  merge arguments and object */
-	void (*merge) (struct cmdnode_t*, size_t, struct _select_t*);
-	/*  discard previous `merge call */
-	void (*split) (struct cmdnode_t*, size_t, struct _select_t*);
-	/* ptr to args, terminate at TVOID*/
-	struct cmdargs_t *args;
+	/* description */
+	char *info;
+	struct cmdCall_t *call;
 };
 
+struct cmdCall_t
+{
+	/* **
+	 * pointers to callback func
+	 * 	struct cmdNode_t *current_node_ptr
+	 * 	size_t number_of_current_layer
+	 * 	struct select_t *layers_stack
+	 */
+	/*  merge arguments and object */
+	void (*merge) (struct cmdNode_t*, size_t, struct select_t*);
+	/*  discard previous `merge call */
+	void (*split) (struct cmdNode_t*, size_t, struct select_t*);
+	/* ptr to args, terminate at TVOID*/
+	struct cmdArgs_t *args;
+};
 
 #endif /* _MSEL_1295020820_ */
 

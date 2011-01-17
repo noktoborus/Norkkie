@@ -13,7 +13,7 @@
 struct input_node_t
 {
 	/* pointer to finded func */
-	struct cmdnode_t *cmd;
+	struct cmdNode_t *cmd;
 	/* num of current arg in cmd */
 	size_t argn;
 	/* * next/prev node */
@@ -92,38 +92,38 @@ struct model_t
 };
 
 /* *** feel select's structs *** */
-struct cmdnode_t __cmdnodes_root[] =
+struct cmdNode_t __cmdnodes_root[] =
 {
-	{ "a", 1, msel_func_radd, NULL, msel_func_radd_args },
-	{ "s", 1, msel_func_rsel, NULL, msel_func_rsel_args },
-	{ NULL, 0, NULL, NULL, NULL }
-};
-
-struct cmdnode_t __cmdnodes_model[] =
-{
-	{ "s", 1, msel_func_msel, NULL, msel_func_msel_args },
-	{ "m", 1, msel_func_mmov, NULL, msel_func_mmov_args },
-	{ "r", 1, msel_func_mrot, NULL, msel_func_mrot_args },
-	{ "d", 1, msel_func_mdel, NULL, msel_func_mdel_args },
-	{ "+", 1, msel_func_msadd, NULL, msel_func_msop_args },
-	{ "-", 1, msel_func_msdel, NULL, msel_func_msop_args },
+	{ "a", 1, "/* TODO a */", msel_func_radd },
+	{ "s", 1, "/* TODO s */", msel_func_rsel },
 	{ NULL, 0, NULL, NULL }
 };
 
-struct cmdnode_t __cmdnodes_wire[] =
+struct cmdNode_t __cmdnodes_model[] =
 {
-	{ NULL, 0, NULL, NULL, NULL }
+	{ "s", 1, "/* TODO s */", msel_func_msel },
+	{ "+", 1, "/* TODO + */", msel_func_msadd },
+	{ "-", 1, "/* TODO - */", msel_func_msdel },
+	{ "m", 1, "/* TODO m */", msel_func_mmov },
+	{ "r", 1, "/* TODO r */", msel_func_mrot },
+	{ "d", 1, "/* TODO d */", msel_func_mdel },
+	{ NULL, 0, NULL, NULL }
 };
 
-struct cmdnode_t __cmdnodes_node[] =
+struct cmdNode_t __cmdnodes_wire[] =
 {
-	{ NULL, 0, NULL, NULL, NULL }
+	{ NULL, 0, NULL, NULL }
 };
 
-struct cmdnode_t _cmdnodes_global[] =
+struct cmdNode_t __cmdnodes_node[] =
 {
-	{ "r", 1, msel_func_return, NULL, NULL },
-	{ NULL, 0, NULL, NULL, NULL }
+	{ NULL, 0, NULL, NULL }
+};
+
+struct cmdNode_t _cmdnodes_global[] =
+{
+	{ "r", 1, "/* TODO r*/", msel_func_return },
+	{ NULL, 0, NULL, NULL }
 };
 
 struct _select_t _root_sel_s[SELECT_COUNT_S] =
@@ -143,8 +143,6 @@ struct select_t root_sel =
 };
 
 /* *** code *** */
-struct NKKBWire_t wire;
-
 uint64_t glpe_inters = 0;
 uint64_t glcpe_inters = 0;
 inline static void
@@ -203,90 +201,19 @@ display(void)
 	glLoadIdentity ();
 
 	glTranslatef (0.0f, 0.0f, scrn_change.distance);
-	// rotate screen
+	/* rotate screen */
 	glRotatef (scrn_change.angle[1], 1.0, 0.0, 0.0);
 	glRotatef (scrn_change.angle[0], 0.0, 1.0, 0.0);
-	// draw screen
+	/* draw screen */
 	//glPolygonMode (GL_FRONT, GL_LINE);
-#if 0
-	/*
-	glBegin (GL_TRIANGLE_STRIP);
-	glColor3f (1.f, 0.f, 0.f);
-	glVertex2f (0.f, 0.f);	// 0
-	glColor3f (0.f, 1.f, 0.f);
-	glVertex2f (0.f, 10.f);	// 1
-	glColor3f (0.f, 0.f, 1.f);
-	glVertex2f (10.f, 10.f);	// 2
-
-	glColor3f (1.f, 1.f, 1.f);
-	glVertex2f (0.f, 20.f);	// 3
-	glColor3f (1.f, 0.f, 0.f);
-	glVertex2f (10.f, 20.f);	// 4
-
-	// reset to 2 line
-	glVertex2f (10.f, 20.f);	// 5
-	// new line from 5..6 node
-	glColor3f (0.f, 1.f, 0.f);
-	glVertex2f (20.f, 10.f);	// 6
-
-	glVertex2f (20.f, 20.f);
-	glEnd ();
-	*/
-#endif
-#if 1
-	glBegin (GL_TRIANGLE_STRIP);
-	for (x = 0; wire.polly && x < wire.polly->size; x++)
-	{
-		switch (x % 3)
-		{
-			case 0:
-				glColor3f (1.f, 0.f, 0.f);
-				break;
-			case 1:
-				glColor3f (0.f, 1.f, 0.f);
-				break;
-			case 2:
-				glColor3f (0.f, 0.f, 1.f);
-				break;
-		}
-		glVertex3fv (wire.polly->s[x].v);
-	}
-	glEnd ();
-#endif
-#if 1
-	// draw control
-	//glTranslatef (0.f, 0.f, 1.f);
-	glColor3f (1.f, 0.f, 0.f);
-	glPointSize (3);
-	glBegin (GL_POINTS);
-	for (x = 0; x < wire.size; x++)
-	{
-		glVertex3fv (wire.point[x].v);
-	}
-	glEnd ();
-#endif 
-#if 0
-	glBegin (GL_TRIANGLES);
-		glColor3f (1.f, 1.f, 1.f);
-		glVertex3f (0.f, 0.f, 0.f);
-		glColor3f (0.f, 0.f, 0.f);
-		glVertex3f (10.f, 10.f, 0.f);
-		glVertex3f (10.f, 0.f, 0.f);
-	glEnd ();
-#endif
-		glBegin(GL_TRIANGLES);						// Drawing Using Triangles
-		glVertex3f(0.0f, 1.0f, 0.0f);				// Top
-		glVertex3f(-1.0f, -1.0f, 0.0f);				// Bottom Left
-		glVertex3f(1.0f, -1.0f, 0.0f);				// Bottom Right
-	glEnd();							// Finished Drawing The Triangle
-
-	// draw interface
+	/* TODO */
+	/* draw interface */
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
 	glOrtho (0., scrn_info.width, -scrn_info.height, 0., 1.0, -1.0);
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity ();
-
+	glColor3f (1.f, 0.f, 0.f);
 	scale2[0] = scrn_info.width * 0.02f;
 	scale2[1] = scrn_info.height * 0.02f * scrn_info.aspect;
 	if (scale2[0] < 10.f)
@@ -328,12 +255,12 @@ display(void)
 		glcRenderChar ('(');
 		for (x = 0; x < inputs.c->argn; x++)
 		{
-			switch (inputs.c->cmd->args[x].type)
+			switch (inputs.c->cmd->call->args[x].type)
 			{
 				case FINPUT_TVOID:
 					break;
 				case FINPUT_TSTRING:
-					glcRenderString (inputs.c->cmd->args->v.cstr);
+					glcRenderString (inputs.c->cmd->call->args->v.cstr);
 					break;
 				case FINPUT_TSINT:
 				case FINPUT_TUINT:
@@ -342,9 +269,13 @@ display(void)
 			}
 			glcRenderChar (',');
 		}
-		glcRenderString (
-				input_n2s[inputs.c->cmd->args[inputs.c->argn].type].string);
+		glcRenderString (input_n2s[inputs.c->cmd->\
+					call->args[inputs.c->argn].type].string);
 		glcRenderChar (')');
+	}
+	else
+	{
+		glcRenderString ("wait command");
 	}
 	glPopMatrix ();
  	glutSwapBuffers ();
@@ -360,7 +291,7 @@ void reshape(int x, int y)
 }
 
 int
-unpack_cmdarg (struct cmdargs_t *dst, char *in, size_t len)
+unpack_cmdarg (struct cmdArgs_t *dst, char *in, size_t len)
 {
 	/* prepare argument for call from
 	 * 	string *in with length len in struct *dst
@@ -412,7 +343,7 @@ void
 subkey (unsigned char key)
 {
 	char *tmp;
-	struct cmdnode_t *cmd;
+	struct cmdNode_t *cmd;
 	/* test ptr call */
 	if (inputs.type != FINPUT_TSTRING && (!inputs.c || !inputs.c->cmd))
 		inputs.type = FINPUT_TSTRING;
@@ -465,6 +396,8 @@ subkey (unsigned char key)
 			inputs.c = calloc (1, sizeof (struct input_node_t));
 			if (!inputs.c)
 				return;
+			if (inputs.i->prev)
+				inputs.i->prev->next = inputs.c;
 			inputs.c->prev = inputs.i->prev;
 			inputs.i->prev = inputs.c;
 		}
@@ -497,7 +430,7 @@ subkey (unsigned char key)
 	inputs.failch = '\0';
 
 	/** current command not set **/
-	if (!inputs.c->cmd)
+	if (!(cmd = inputs.c->cmd))
 	{
 		/* try find in layer space */
 		if ((cmd = root_sel.sel[root_sel.cursel].cmds))
@@ -525,8 +458,24 @@ subkey (unsigned char key)
 			}
 			while ((++cmd)->tag);
 		}
-		if (cmd->tag)
+
+		/* update info, if cmd founded */
+		if (cmd && cmd->tag)
 		{
+			/* prevent exceptions */
+			if (!cmd->call)
+			{
+				cmd->call = msel_func_NULL;
+			}
+			else
+			{
+				if (!cmd->call->args)
+					cmd->call->args = msel_func_NULL->args;
+				if (!cmd->call->merge)
+					cmd->call->merge = msel_func_NULL->merge;
+				if (!cmd->call->split)
+					cmd->call->split = msel_func_NULL->split;
+			}
 			/* set current func */
 			inputs.c->cmd = cmd;
 			/* avoid possible errors :3 */
@@ -535,8 +484,9 @@ subkey (unsigned char key)
 			inputs.strlen = 0;
 		}
 	}
+
 	/* test current command */
-	if (inputs.c->cmd)
+	if ((cmd = inputs.c->cmd))
 	{
 		/* if it end of args */
 		if(inputs.input[inputs.strlen - 1] == ',')
@@ -544,7 +494,7 @@ subkey (unsigned char key)
 			/* remove ',' from string */
 			inputs.input[--inputs.strlen] = '\0';
 			/* unpack args */
-			if (!unpack_cmdarg (&inputs.c->cmd->args[inputs.c->argn],
+			if (!unpack_cmdarg (&cmd->call->args[inputs.c->argn],
 					inputs.input, inputs.strlen))
 			{
 				/* if unpack is ok */
@@ -555,23 +505,18 @@ subkey (unsigned char key)
 		}
 
 		/* null args count or complite: exec now */
-		if (!inputs.c->cmd->args ||
-				inputs.c->cmd->args[inputs.c->argn].type == FINPUT_TVOID)
+		printf ("%d %p %p\n", inputs.c->argn, (void*)cmd, (void*)cmd->call);
+		if (cmd->call->args[inputs.c->argn].type == FINPUT_TVOID)
 		{
 			/* call */
-			if (inputs.c->cmd->merge)
-			{
-				inputs.c->cmd->merge (inputs.c->cmd, root_sel.cursel,
-						&root_sel.sel[root_sel.cursel]);
-			}
+			cmd->call->merge (cmd, root_sel.cursel, &root_sel);
 			/* change ptr */
 			inputs.c = NULL;
 		}
 		else
-		/* set input type */
-		if (inputs.c->cmd->args)
 		{
-			inputs.type = inputs.c->cmd->args[inputs.c->argn].type;
+			/* set input type */
+			inputs.type = cmd->call->args[inputs.c->argn].type;
 		}
 	}
 }
@@ -673,10 +618,12 @@ int main(int argc, char **argv)
 #endif
 	glEnable (GL_TEXTURE_2D); /* for GLC_TEXTURE */
 
+	/*
 	nkkbWire (&wire, 5, 5);
 	nkkbResize (&wire, 10, 10);
 	nkkbGenPolly (&wire, 10, 10);
 	nkkbGenPoints (&wire);
+	*/
 	glutMainLoop();
 	return 0;
 }

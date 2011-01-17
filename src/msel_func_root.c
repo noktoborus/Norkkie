@@ -1,24 +1,30 @@
 #include "msel_func.h"
 /* root layer */
 
-struct cmdargs_t msel_func_radd_args[] =
+static void
+_radd (struct cmdNode_t *self, size_t layno, struct select_t *lays)
 {
-	{FINPUT_TVOID, 0, {0}}
-};
+}
 
-struct cmdargs_t msel_func_rsel_args[] =
+static void
+_rsel (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+{
+}
+
+static struct cmdArgs_t _rsel_args[] =
 {
 	{FINPUT_TUINT, 0, {0}},
 	{FINPUT_TVOID, 0, {0}},
 };
 
-void
-msel_func_radd (struct cmdnode_t *self, size_t layno, struct _select_t *lay)
+/* exported structs */
+struct cmdCall_t msel_func_radd[] =
 {
-}
+	{ _radd, NULL, NULL }
+};
 
-void
-msel_func_rsel (struct cmdnode_t *self, size_t layno, struct _select_t *lay)
+struct cmdCall_t msel_func_rsel[] =
 {
-}
+	{ _rsel, NULL, _rsel_args }
+};
 
