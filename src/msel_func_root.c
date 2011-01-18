@@ -4,6 +4,16 @@
 static void
 _radd (struct cmdNode_t *self, size_t layno, struct select_t *lays)
 {
+	if (!lays->model)
+	{
+		lays->model = calloc (1, sizeof (struct listModel_t));
+		if (!lays->model)
+			return;
+		nkkbWire (&lays->model->model.wire, 5, 5);
+		nkkbResize (&lays->model->model.wire, 10, 10);
+		nkkbGenPolly (&lays->model->model.wire, 10, 10);
+		nkkbGenPoints (&lays->model->model.wire);
+	}
 }
 
 static void

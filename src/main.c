@@ -87,12 +87,6 @@ struct scrn_change_t
 	{0.0f, 0.0f}
 };
 
-struct model_t
-{
-	struct NKKBVertex_t pos;
-	struct NKKBWire_t wire;
-};
-
 /* *** feel select's structs *** */
 struct cmdNode_t __cmdnodes_root[] =
 {
@@ -187,6 +181,7 @@ void
 display(void)
 {
 	size_t x;
+	struct listModel_t *model_ptr;
 	float cpos[3] = {0.f, 0.f, 0.f};
 	float npos[3] = {0.f, 0.f, 0.f};
 	float scale2[2] = {0.f, 0.f};
@@ -208,7 +203,23 @@ display(void)
 	glRotatef (scrn_change.angle[0], 0.0, 1.0, 0.0);
 	/* draw screen */
 	//glPolygonMode (GL_FRONT, GL_LINE);
-	/* TODO */
+	if ((model_ptr = root_sel.model))
+	{
+		do
+		{
+		/* TODO */
+			/* draw control */
+			glPointSize (3);
+			glColor3f (1.f, 0.f, 0.f);
+			glBegin (GL_POINTS);
+			for (x = 0; x < model_ptr->model.wire.size; x++)
+			{
+				glVertex3fv (model_ptr->model.wire.point[x].v);
+			}
+			glEnd ();
+		}
+		while ((model_ptr = model_ptr->next));
+	}
 	/* draw interface */
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
@@ -653,12 +664,6 @@ int main(int argc, char **argv)
 #endif
 	glEnable (GL_TEXTURE_2D); /* for GLC_TEXTURE */
 
-	/*
-	nkkbWire (&wire, 5, 5);
-	nkkbResize (&wire, 10, 10);
-	nkkbGenPolly (&wire, 10, 10);
-	nkkbGenPoints (&wire);
-	*/
 	glutMainLoop();
 	return 0;
 }

@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "input.h"
+#include "model.h"
+
 /*
  * Select model
  */
@@ -33,6 +35,8 @@ struct select_t
 	/* global  cmds */
 	size_t cmds_count;
 	struct cmdNode_t *cmds;
+	/* ptr to models */
+	struct listModel_t *model;
 };
 
 struct cmdArgs_t
