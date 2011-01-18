@@ -31,6 +31,12 @@ all: ${BIN}
 clean:
 	rm -rf ${BUILD_d}
 
+g:
+	gdb ${BIN}
+
+c:
+	gdb ${BIN} core
+
 ${BIN}: ${OBJ_d} ${BIN_d} ${OBJ}
 	${CC} -o $@ ${LIBS} ${OBJ}
 

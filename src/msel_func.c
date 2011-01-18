@@ -9,7 +9,7 @@ _return (struct cmdNode_t *self, size_t layno, struct select_t *lays)
 /* exports */
 struct cmdCall_t msel_func_return[] =
 {
-	{ _return, NULL, NULL }
+	{ _return, NULL, 0, NULL }
 };
 
 /* plugs */
@@ -26,6 +26,11 @@ static struct cmdArgs_t _nobody_here[] =
 /* plug export */
 struct cmdCall_t msel_func_NULL[] =
 {
-	{ _do_not_call_here, _do_not_call_here, _nobody_here }
+	{
+		_do_not_call_here,
+		_do_not_call_here,
+		sizeof (_nobody_here),
+		_nobody_here
+	}
 };
 

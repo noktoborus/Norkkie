@@ -14,6 +14,8 @@ struct input_node_t
 {
 	/* pointer to finded func */
 	struct cmdNode_t *cmd;
+	/* ptr to call */
+	struct cmdCall_t *call;
 	/* num of current arg in cmd */
 	size_t argn;
 	/* * next/prev node */
@@ -344,6 +346,7 @@ subkey (unsigned char key)
 {
 	char *tmp;
 	struct cmdNode_t *cmd;
+	size_t sz;
 	/* test ptr call */
 	if (inputs.type != FINPUT_TSTRING && (!inputs.c || !inputs.c->cmd))
 		inputs.type = FINPUT_TSTRING;
@@ -432,6 +435,12 @@ subkey (unsigned char key)
 	/** current command not set **/
 	if (!(cmd = inputs.c->cmd))
 	{
+		/* free old data */
+		if (inputs.c->call)
+		{
+			free (inputs.c->call);
+			inputs.c->call = NULL;
+		}
 		/* try find in layer space */
 		if ((cmd = root_sel.sel[root_sel.cursel].cmds))
 		{
@@ -447,7 +456,7 @@ subkey (unsigned char key)
 			while ((++cmd)->tag);
 		}
 		/* try find in global space */
-		if (!(cmd->tag) && (cmd = root_sel.cmds))
+		if (cmd && !(cmd->tag) && (cmd = root_sel.cmds))
 		{
 			do
 			{
@@ -458,43 +467,64 @@ subkey (unsigned char key)
 			}
 			while ((++cmd)->tag);
 		}
+	}
 
-		/* update info, if cmd founded */
-		if (cmd && cmd->tag)
+	/* update info, if cmd founded or try alloc data again */
+	if (cmd && cmd->tag && !inputs.c->call)
+	{
+		if (cmd->call)
 		{
+			sz = (cmd->call->args_size ? cmd->call->args_size
+					: msel_func_NULL->args_size);
+			inputs.c->call = calloc (1, sizeof (struct cmdCall_t) + sz);
+
+			if (!inputs.c->call)
+				return;
+
+			memcpy (inputs.c->call, (const void*)cmd->call,
+					sizeof (struct cmdCall_t));
+
+			if (sz)
+			{
+				/* set offset to args */
+				inputs.c->call->args = (struct cmdArgs_t*)
+						((char*)inputs.c->call + sizeof (struct cmdCall_t));
+				/* copy args params to new block */
+				if (cmd->call->args_size)
+				{
+					memcpy (inputs.c->call->args, cmd->call->args, sz);
+				}
+				else
+				{
+					memcpy (inputs.c->call->args, msel_func_NULL->args, sz);
+				}
+			}
+
 			/* prevent exceptions */
-			if (!cmd->call)
-			{
-				cmd->call = msel_func_NULL;
-			}
-			else
-			{
-				if (!cmd->call->args)
-					cmd->call->args = msel_func_NULL->args;
-				if (!cmd->call->merge)
-					cmd->call->merge = msel_func_NULL->merge;
-				if (!cmd->call->split)
-					cmd->call->split = msel_func_NULL->split;
-			}
+			if (!inputs.c->call->merge)
+				inputs.c->call->merge = msel_func_NULL->merge;
+			if (!inputs.c->call->split)
+				inputs.c->call->split = msel_func_NULL->split;
 			/* set current func */
 			inputs.c->cmd = cmd;
 			/* avoid possible errors :3 */
 			inputs.c->argn = 0;
-			/* rewind input */
-			inputs.strlen = 0;
 		}
+		/* rewind input */
+		inputs.strlen = 0;
 	}
 
 	/* test current command */
-	if ((cmd = inputs.c->cmd))
+	if (inputs.c->cmd && inputs.c->call)
 	{
+		// TODO: cmd->call replace to inputs.c->call
 		/* if it end of args */
 		if(inputs.input[inputs.strlen - 1] == ',')
 		{
 			/* remove ',' from string */
 			inputs.input[--inputs.strlen] = '\0';
 			/* unpack args */
-			if (!unpack_cmdarg (&cmd->call->args[inputs.c->argn],
+			if (!unpack_cmdarg (&inputs.c->call->args[inputs.c->argn],
 					inputs.input, inputs.strlen))
 			{
 				/* if unpack is ok */
@@ -505,18 +535,17 @@ subkey (unsigned char key)
 		}
 
 		/* null args count or complite: exec now */
-		printf ("%d %p %p\n", inputs.c->argn, (void*)cmd, (void*)cmd->call);
-		if (cmd->call->args[inputs.c->argn].type == FINPUT_TVOID)
+		if (inputs.c->call->args[inputs.c->argn].type == FINPUT_TVOID)
 		{
 			/* call */
-			cmd->call->merge (cmd, root_sel.cursel, &root_sel);
+			inputs.c->call->merge (inputs.c->cmd, root_sel.cursel, &root_sel);
 			/* change ptr */
 			inputs.c = NULL;
 		}
 		else
 		{
 			/* set input type */
-			inputs.type = cmd->call->args[inputs.c->argn].type;
+			inputs.type = inputs.c->call->args[inputs.c->argn].type;
 		}
 	}
 }

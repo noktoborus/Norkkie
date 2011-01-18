@@ -59,31 +59,31 @@ _mrot (struct cmdNode_t *self, size_t layno, struct select_t *lay)
 
 struct cmdCall_t msel_func_msel[] =
 {
-	{ _msel, NULL, _msel_args }
+	{ _msel, NULL, sizeof (_msel_args), _msel_args }
 };
 
 struct cmdCall_t msel_func_msadd[] =
 {
-	{ _msadd, NULL, _msop_args }
+	{ _msadd, NULL, sizeof (_msop_args), _msop_args }
 };
 
 struct cmdCall_t msel_func_msdel[] =
 {
-	{ _msdel, NULL, _msop_args }
+	{ _msdel, NULL, sizeof (_msop_args), _msop_args }
 };
 
 struct cmdCall_t msel_func_mmov[] =
 {
-	{ _mmov, NULL, _mmov_args }
+	{ _mmov, NULL, sizeof (_mmov_args), _mmov_args }
 };
 
 struct cmdCall_t msel_func_mrot[] =
 {
-	{ _mrot, NULL, _mrot_args }
+	{ _mrot, NULL, sizeof (_mrot_args), _mrot_args }
 };
 
 struct cmdCall_t msel_func_mdel[] =
 {
-	{ _mdel, NULL, NULL }
+	{ _mdel, NULL, 0, NULL }
 };
 

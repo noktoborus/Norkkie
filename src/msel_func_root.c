@@ -20,11 +20,11 @@ static struct cmdArgs_t _rsel_args[] =
 /* exported structs */
 struct cmdCall_t msel_func_radd[] =
 {
-	{ _radd, NULL, NULL }
+	{ _radd, NULL, 0, NULL }
 };
 
 struct cmdCall_t msel_func_rsel[] =
 {
-	{ _rsel, NULL, _rsel_args }
+	{ _rsel, NULL, sizeof (_rsel_args), _rsel_args }
 };
 
