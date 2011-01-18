@@ -376,6 +376,12 @@ subkey (unsigned char key)
 		return;
 	}
 	else
+	/* remove all data in input */
+	if (key == 8)
+	{
+		inputs.strlen = 0;
+		return;
+	}
 	/* ignore ',' in start of line and over characters */
 	if ((!inputs.strlen && key == ',') ||
 			(key != ',' && input_filter (inputs.type, key)))
