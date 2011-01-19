@@ -2,7 +2,7 @@
 /* global layer */
 
 static void
-_return (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_return (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
 
@@ -14,23 +14,18 @@ struct cmdCall_t msel_func_return[] =
 
 /* plugs */
 static void
-_do_not_call_here (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_not_call_here (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
-
-static struct cmdArgs_t _nobody_here[] =
-{
-	{ FINPUT_TVOID, 0, {0}}
-};
 
 /* plug export */
 struct cmdCall_t msel_func_NULL[] =
 {
 	{
-		_do_not_call_here,
-		_do_not_call_here,
-		sizeof (_nobody_here),
-		_nobody_here
+		_not_call_here,
+		_not_call_here,
+		0,
+		NULL
 	}
 };
 

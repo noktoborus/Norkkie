@@ -14,10 +14,9 @@ struct input_node_t
 {
 	/* pointer to finded func */
 	struct cmdNode_t *cmd;
-	/* ptr to call */
-	struct cmdCall_t *call;
 	/* num of current arg in cmd */
 	size_t argn;
+	char **argv;
 	/* * next/prev node */
 	/* ptr to next node */
 	struct input_node_t *next;
@@ -32,6 +31,8 @@ struct input_cmds_t
 	int type;
 	/* input string len */
 	size_t strlen;
+	/* input string offset */
+	size_t offset;
 	/* current input string (not parsed) */
 	char *input;
 	/* out if place char in input */
@@ -39,16 +40,15 @@ struct input_cmds_t
 	/* * */
 	struct input_node_t *i;
 	struct input_node_t *c;
-	char *cache;
 } inputs =
 {
 	FINPUT_TSTRING,
+	0,
 	0,
 	NULL,
 	'\0',
 	NULL,
 	NULL,
-	NULL
 };
 
 /* old */
@@ -249,7 +249,7 @@ display(void)
 	if (inputs.input)
 	{
 		inputs.input[inputs.strlen] = '\0';
-		glcRenderString (inputs.input);
+		glcRenderString (&inputs.input[inputs.offset]);
 	}
 	if (inputs.failch)
 	{
@@ -265,26 +265,21 @@ display(void)
 	{
 		glColor3f (1.f, 1.f, 1.f);
 		glcRenderString (inputs.c->cmd->tag);
-		glcRenderChar ('(');
-		for (x = 0; x < inputs.c->argn; x++)
+		glcRenderString ("(");
+		for (x = 0; x < inputs.c->cmd->call->wargc; x++)
 		{
-			switch (inputs.c->cmd->call->args[x].type)
+			if (x < inputs.c->argn)
 			{
-				case FINPUT_TVOID:
-					break;
-				case FINPUT_TSTRING:
-					glcRenderString (inputs.c->cmd->call->args->v.cstr);
-					break;
-				case FINPUT_TSINT:
-				case FINPUT_TUINT:
-				case FINPUT_TFLOAT:
-					break;
+				glcRenderString ("ok, ");
 			}
-			glcRenderChar (',');
+			else
+			{
+				glcRenderString (input_n2s[inputs.c->cmd->\
+							call->wargk[x]].string);
+				glcRenderString (", ");
+			}
 		}
-		glcRenderString (input_n2s[inputs.c->cmd->\
-					call->args[inputs.c->argn].type].string);
-		glcRenderChar (')');
+		glcRenderString ("void)");
 	}
 	else
 	{
@@ -303,64 +298,12 @@ void reshape(int x, int y)
 	glViewport (0, 0, (GLsizei)x, (GLsizei)y);
 }
 
-int
-unpack_cmdarg (struct cmdArgs_t *dst, char *in, size_t len)
-{
-	/* prepare argument for call from
-	 * 	string *in with length len in struct *dst
-	 */
-	size_t shift = 0;
-	switch (dst->type)
-	{
-		case FINPUT_TVOID:
-			break;
-		case FINPUT_TSTRING:
-			/* free old value */
-			if (dst->v.cstr)
-				free (dst->v.cstr);
-			/* copy new */
-			dst->v.cstr = strdup (in);
-			if (!dst->v.cstr)
-				return 1;
-			dst->len = len;
-			break;
-		case FINPUT_TSINT:
-			dst->v.sint = 0;
-			while (len--)
-			{
-				if (in[len] == '-')
-					dst->v.sint *= -1;
-				else
-				if (in[len] >= '0' && in[len] <= '9')
-					dst->v.sint += (in[len] - '0') * pow (10, shift++);
-			}
-			break;
-		case FINPUT_TUINT:
-			dst->v.uint = 0;
-			while (len--)
-			{
-				if (in[len] >= '0' && in[len] <= '9')
-					dst->v.uint += (in[len] - '0') * pow (10, shift++);
-			}
-			break;
-		case FINPUT_TFLOAT:
-			dst->v.flt = 0.f;
-			break;
-		default:
-			return 1;
-	};
-	return 0;
-}
-
 void
 subkey (unsigned char key)
 {
 	char *tmp;
 	struct cmdNode_t *cmd;
 	size_t sz;
-	/* test ptr call */
-	if (inputs.type != FINPUT_TSTRING && (!inputs.c || !inputs.c->cmd))
-		inputs.type = FINPUT_TSTRING;
 
 	/* test control symbols */
 	if (key == 127)
@@ -393,6 +336,7 @@ subkey (unsigned char key)
 		inputs.strlen = 0;
 		return;
 	}
+
 	/* ignore ',' in start of line and over characters */
 	if ((!inputs.strlen && key == ',') ||
 			(key != ',' && input_filter (inputs.type, key)))
@@ -452,12 +396,6 @@ subkey (unsigned char key)
 	/** current command not set **/
 	if (!(cmd = inputs.c->cmd))
 	{
-		/* free old data */
-		if (inputs.c->call)
-		{
-			free (inputs.c->call);
-			inputs.c->call = NULL;
-		}
 		/* try find in layer space */
 		if ((cmd = root_sel.sel[root_sel.cursel].cmds))
 		{
@@ -484,85 +422,77 @@ subkey (unsigned char key)
 			}
 			while ((++cmd)->tag);
 		}
-	}
-
-	/* update info, if cmd founded or try alloc data again */
-	if (cmd && cmd->tag && !inputs.c->call)
-	{
-		if (cmd->call)
+		/* continues input */
+		if (cmd && cmd->tag)
 		{
-			sz = (cmd->call->args_size ? cmd->call->args_size
-					: msel_func_NULL->args_size);
-			inputs.c->call = calloc (1, sizeof (struct cmdCall_t) + sz);
+			if (!cmd->call)
+				cmd->call = msel_func_NULL;
+			else
+			if (!cmd->call->merge)
+				cmd->call->merge = msel_func_NULL->merge;
+			else
+			if (!cmd->call->split)
+				cmd->call->split = msel_func_NULL->split;
 
-			if (!inputs.c->call)
+			inputs.offset = cmd->taglen;
+			inputs.input[inputs.offset] = '\0';
+
+			/* try alloc memory */
+			inputs.c->argv = calloc (1 + cmd->call->wargc, sizeof (char**));
+			if (!inputs.c->argv)
 				return;
-
-			memcpy (inputs.c->call, (const void*)cmd->call,
-					sizeof (struct cmdCall_t));
-
-			if (sz)
-			{
-				/* set offset to args */
-				inputs.c->call->args = (struct cmdArgs_t*)
-						((char*)inputs.c->call + sizeof (struct cmdCall_t));
-				/* copy args params to new block */
-				if (cmd->call->args_size)
-				{
-					memcpy (inputs.c->call->args, cmd->call->args, sz);
-				}
-				else
-				{
-					memcpy (inputs.c->call->args, msel_func_NULL->args, sz);
-				}
-			}
-
-			/* prevent exceptions */
-			if (!inputs.c->call->merge)
-				inputs.c->call->merge = msel_func_NULL->merge;
-			if (!inputs.c->call->split)
-				inputs.c->call->split = msel_func_NULL->split;
-			/* set current func */
 			inputs.c->cmd = cmd;
-			/* avoid possible errors :3 */
 			inputs.c->argn = 0;
 		}
-		/* rewind input */
-		inputs.strlen = 0;
 	}
 
 	/* test current command */
-	if (inputs.c->cmd && inputs.c->call)
+	if (inputs.c->cmd)
 	{
-		// TODO: cmd->call replace to inputs.c->call
-		/* if it end of args */
-		if(inputs.input[inputs.strlen - 1] == ',')
+		if (inputs.input[inputs.strlen - 1] == ',')
 		{
-			/* remove ',' from string */
-			inputs.input[--inputs.strlen] = '\0';
-			/* unpack args */
-			if (!unpack_cmdarg (&inputs.c->call->args[inputs.c->argn],
-					inputs.input, inputs.strlen))
-			{
-				/* if unpack is ok */
-				inputs.c->argn++;
-				/* rewind */
-				inputs.strlen = 0;
-			}
+			inputs.input[inputs.strlen] = '\0';
+			inputs.c->argn++;
+			inputs.offset = inputs.strlen - inputs.offset;
 		}
 
-		/* null args count or complite: exec now */
-		if (inputs.c->call->args[inputs.c->argn].type == FINPUT_TVOID)
+		/* %( */
+		if (inputs.c->argn > inputs.c->cmd->call->wargc)
+			inputs.c->argn = inputs.c->cmd->call->wargc;
+
+		/* test for call */
+		if (inputs.c->argn == inputs.c->cmd->call->wargc)
 		{
-			/* call */
-			inputs.c->call->merge (inputs.c->call, root_sel.cursel, &root_sel);
-			/* change ptr */
+			inputs.c->argv[0] = calloc (inputs.strlen, sizeof (char));
+			if (!inputs.c->argv[0])
+			{
+				free (inputs.c->argv);
+				inputs.c = NULL;
+				return;
+			}
+			memcpy (inputs.c->argv[0], inputs.input, inputs.strlen);
+
+			/* ptr to over data */
+			if (inputs.c->argn)
+			{
+				do
+				{
+					inputs.c->argv[inputs.c->argn] =
+						&inputs.input[--inputs.offset];
+				}
+				while (--inputs.c->argn);
+			}
+			inputs.c->cmd->call->merge (root_sel.cursel, &root_sel,
+					inputs.c->cmd->call->wargc, inputs.c->argv);
 			inputs.c = NULL;
+			inputs.strlen = 0;
+			inputs.offset = 0;
+			inputs.type = FINPUT_TSTRING;
 		}
 		else
 		{
 			/* set input type */
-			inputs.type = inputs.c->call->args[inputs.c->argn].type;
+			inputs.type = inputs.c->cmd->call->wargk[inputs.c->argn];
 		}
 	}
 }

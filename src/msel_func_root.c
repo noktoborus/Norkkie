@@ -2,7 +2,7 @@
 /* root layer */
 
 static void
-_radd (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_radd (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 	struct listModel_t *m = NULL;
 	if (!lays->model)
@@ -13,6 +13,7 @@ _radd (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 		lays->model = m;
 		lays->model->next = lays->model;
 		lays->model->prev = lays->model;
+		lays->model->model.idno = 1;
 
 	}
 	else
@@ -35,16 +36,16 @@ _radd (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 	}
 }
 
+static int _rsel_args[]=
+{
+	FINPUT_TUINT
+};
+
 static void
-_rsel (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_rsel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
 
-static struct cmdArgs_t _rsel_args[] =
-{
-	{FINPUT_TUINT, 0, {0}},
-	{FINPUT_TVOID, 0, {0}},
-};
 
 /* exported structs */
 struct cmdCall_t msel_func_radd[] =
@@ -54,6 +55,6 @@ struct cmdCall_t msel_func_radd[] =
 
 struct cmdCall_t msel_func_rsel[] =
 {
-	{ _rsel, NULL, sizeof (_rsel_args), _rsel_args }
+	{ _rsel, NULL, 1, _rsel_args }
 };
 

@@ -44,14 +44,14 @@ struct cmdArgs_t
 	/* set to FINPUT_TVOID, FINPUT_TSTRING (from input.h), etc */
 	int type;
 	/* length for TSTRING */
-	size_t len;
-	union
-	{
-		char *cstr;
-		int32_t sint;
-		uint32_t uint;
-		float flt;
-	} v;
+};
+
+union cmdVar_t
+{
+	char *cstr;
+	int32_t sint;
+	uint32_t uint;
+	float flt;
 };
 
 struct cmdNode_t
@@ -68,18 +68,19 @@ struct cmdCall_t
 {
 	/* **
 	 * pointers to callback func
-	 * 	struct cmdNode_t *current_node_ptr
 	 * 	size_t number_of_current_layer
 	 * 	struct select_t *layers_stack
+	 * 	size_t argc
+	 * 	char **argv
 	 */
 	/*  merge arguments and object */
-	void (*merge) (struct cmdCall_t*, size_t, struct select_t*);
+	void (*merge) (size_t, struct select_t*, size_t, char**);
 	/*  discard previous `merge call */
-	void (*split) (struct cmdCall_t*, size_t, struct select_t*);
+	void (*split) (size_t, struct select_t*, size_t, char**);
 	/* size args structure for malloc */
-	size_t args_size;
+	size_t wargc;
 	/* ptr to args, terminate at TVOID*/
-	struct cmdArgs_t *args;
+	int *wargk;
 };
 
 #endif /* _MSEL_1295020820_ */

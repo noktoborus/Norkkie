@@ -1,57 +1,43 @@
 #include "msel_func.h"
 
 /* model layer */
-static struct cmdArgs_t _msel_args[] =
+static int _msel_args[] =
 {
-	{FINPUT_TUINT, 0, {0}},
-	{FINPUT_TVOID, 0, {0}},
+	FINPUT_TUINT
 };
 
-static struct cmdArgs_t _msop_args[] =
+static int _mmov_args[] =
 {
-	{FINPUT_TUINT, 0, {0}},
-	{FINPUT_TVOID, 0, {0}},
-};
-
-static struct cmdArgs_t _mmov_args[] =
-{
-	{FINPUT_TFLOAT, 0, {0}},
-	{FINPUT_TVOID, 0, {0}}
-};
-
-static struct cmdArgs_t _mrot_args[] =
-{
-	{FINPUT_TFLOAT, 0, {0}},
-	{FINPUT_TVOID, 0, {0}},
+	FINPUT_TFLOAT
 };
 
 static void
-_msel (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_msel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
 
 static void
-_msadd (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_msadd (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
 
 static void
-_msdel (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_msdel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
 
 static void
-_mdel (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_mdel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
 
 static void
-_mmov (struct cmdCall_t *self, size_t layno, struct select_t *lays)
+_mmov (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
 
 static void
-_mrot (struct cmdCall_t *self, size_t layno, struct select_t *lay)
+_mrot (size_t layno, struct select_t *lay, size_t argc, char **argv)
 {
 }
 
@@ -59,27 +45,27 @@ _mrot (struct cmdCall_t *self, size_t layno, struct select_t *lay)
 
 struct cmdCall_t msel_func_msel[] =
 {
-	{ _msel, NULL, sizeof (_msel_args), _msel_args }
+	{ _msel, NULL, 1, _msel_args }
 };
 
 struct cmdCall_t msel_func_msadd[] =
 {
-	{ _msadd, NULL, sizeof (_msop_args), _msop_args }
+	{ _msadd, NULL, 1, _msel_args }
 };
 
 struct cmdCall_t msel_func_msdel[] =
 {
-	{ _msdel, NULL, sizeof (_msop_args), _msop_args }
+	{ _msdel, NULL, 1, _msel_args }
 };
 
 struct cmdCall_t msel_func_mmov[] =
 {
-	{ _mmov, NULL, sizeof (_mmov_args), _mmov_args }
+	{ _mmov, NULL, 1, _mmov_args }
 };
 
 struct cmdCall_t msel_func_mrot[] =
 {
-	{ _mrot, NULL, sizeof (_mrot_args), _mrot_args }
+	{ _mrot, NULL, 1, _mmov_args }
 };
 
 struct cmdCall_t msel_func_mdel[] =
