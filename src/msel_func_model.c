@@ -26,32 +26,32 @@ static struct cmdArgs_t _mrot_args[] =
 };
 
 static void
-_msel (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_msel (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
 }
 
 static void
-_msadd (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_msadd (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
 }
 
 static void
-_msdel (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_msdel (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
 }
 
 static void
-_mdel (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_mdel (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
 }
 
 static void
-_mmov (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_mmov (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
 }
 
 static void
-_mrot (struct cmdNode_t *self, size_t layno, struct select_t *lay)
+_mrot (struct cmdCall_t *self, size_t layno, struct select_t *lay)
 {
 }
 

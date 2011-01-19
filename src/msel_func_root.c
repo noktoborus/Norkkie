@@ -2,22 +2,41 @@
 /* root layer */
 
 static void
-_radd (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_radd (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
+	struct listModel_t *m = NULL;
 	if (!lays->model)
 	{
-		lays->model = calloc (1, sizeof (struct listModel_t));
-		if (!lays->model)
+		m = calloc (1, sizeof (struct listModel_t));
+		if (!m)
 			return;
-		nkkbWire (&lays->model->model.wire, 5, 5);
-		nkkbResize (&lays->model->model.wire, 10, 10);
-		nkkbGenPolly (&lays->model->model.wire, 10, 10);
-		nkkbGenPoints (&lays->model->model.wire);
+		lays->model = m;
+		lays->model->next = lays->model;
+		lays->model->prev = lays->model;
+
+	}
+	else
+	{
+		m = calloc (1, sizeof (struct listModel_t));
+		if (!m)
+			return;
+		m->next = lays->model;
+		m->prev = lays->model->prev;
+		lays->model->prev->next = m;
+		lays->model->prev = m;
+		m->model.idno = m->prev->model.idno + 1;
+	}
+	if (m)
+	{
+		nkkbWire (&m->model.wire, 5, 5);
+		nkkbResize (&m->model.wire, 10, 10);
+		nkkbGenPolly (&m->model.wire, 10, 10);
+		nkkbGenPoints (&m->model.wire);
 	}
 }
 
 static void
-_rsel (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_rsel (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
 }
 

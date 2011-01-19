@@ -218,7 +218,7 @@ display(void)
 			}
 			glEnd ();
 		}
-		while ((model_ptr = model_ptr->next));
+		while ((model_ptr = model_ptr->next) != root_sel.model);
 	}
 	/* draw interface */
 	glMatrixMode (GL_PROJECTION);
@@ -555,7 +555,7 @@ subkey (unsigned char key)
 		if (inputs.c->call->args[inputs.c->argn].type == FINPUT_TVOID)
 		{
 			/* call */
-			inputs.c->call->merge (inputs.c->cmd, root_sel.cursel, &root_sel);
+			inputs.c->call->merge (inputs.c->call, root_sel.cursel, &root_sel);
 			/* change ptr */
 			inputs.c = NULL;
 		}

@@ -2,7 +2,7 @@
 /* global layer */
 
 static void
-_return (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_return (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
 }
 
@@ -14,7 +14,7 @@ struct cmdCall_t msel_func_return[] =
 
 /* plugs */
 static void
-_do_not_call_here (struct cmdNode_t *self, size_t layno, struct select_t *lays)
+_do_not_call_here (struct cmdCall_t *self, size_t layno, struct select_t *lays)
 {
 }
 
