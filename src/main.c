@@ -260,10 +260,7 @@ display(void)
 	{
 		/* WARNING: ... */
 		inputs.input[inputs.strlen] = '\0';
-		if (inputs.c && inputs.c->argn)
-			glcRenderString (&inputs.input[inputs.offset + 1]);
-		else
-			glcRenderString (&inputs.input[inputs.offset]);
+		glcRenderString (&inputs.input[inputs.offset]);
 	}
 
 	if (inputs.failch)
@@ -353,14 +350,13 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 			ins->offset = 0;
 			/* TODO: call split */
 		}
-		printf ("%d\n", ins->strlen);
 		return;
 	}
 	else
 	/* remove all data in input */
 	if (key == 8)
 	{
-		ins->strlen = (ins->offset + 1);
+		ins->strlen = ins->offset;
 		ins->failch = '\0';
 		return;
 	}
@@ -418,6 +414,7 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 	/* add new char */
 	ins->input[ins->strlen] = key;
 	ins->strlen++;
+	ins->input[ins->strlen] = '\0';
 	/* free error */
 	ins->failch = '\0';
 
@@ -467,8 +464,8 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 			}
 
 
-			ins->offset = ins->strlen;
-
+			ins->input[ins->strlen] = '\0';
+			ins->offset = ++ins->strlen;
 			ins->c->cmd = cmd;
 			ins->c->argn = 0;
 		}
@@ -479,8 +476,8 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 	{
 		if (ins->input[ins->strlen - 1] == ',')
 		{
-			ins->offset = ins->strlen - 1;
-			ins->input[ins->offset] = '\0';
+			ins->offset = ins->strlen;
+			ins->input[ins->strlen - 1] = '\0';
 			ins->c->argn++;
 		}
 
@@ -490,11 +487,10 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 			/* alloc:
 			 *	len of input string
 			 *	+ nums of arguments
-			 *	+ 1 byte ander '\0' for command
 			 */
 			ins->c->argv = calloc (1,
 					sizeof (char) * ins->strlen +
-					sizeof (char*) * (ins->c->argn + 1) + 1);
+					sizeof (char*) * (ins->c->argn + 1));
 			if (!ins->c->argv)
 			{
 				ins->c = NULL;
@@ -503,17 +499,12 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 
 			/* copy tag to argv */
 			ins->c->argv[0] = (char*)(ins->c->argv + ins->c->argn + 1);
-			memcpy (ins->c->argv[0], ins->c->cmd->tag, ins->c->cmd->taglen);
-			/* terminate argv[0] */
-			ins->c->argv[0][ins->c->cmd->taglen] = '\0';
+			memcpy (ins->c->argv[0], ins->input, ins->strlen);
 
 			/* ptr to over data */
 			if (ins->c->argn)
 			{
 				ins->c->argv[1] = ins->c->argv[0] + ins->c->cmd->taglen + 1;
-				/* copy all input line to args array */
-				memcpy (ins->c->argv[1], &ins->input[ins->c->cmd->taglen],
-						ins->strlen - ins->c->cmd->taglen);
 				x = ins->c->argn;
 				do
 				{
