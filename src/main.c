@@ -189,6 +189,13 @@ display(void)
 	cpos[0] = 0.f;
 	npos[0] = 0.f;
 	x = 0;
+	char *sel_text[] =
+	{
+		"root",
+		"model",
+		"wire",
+		"node"
+	};
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode (GL_PROJECTION);
@@ -286,6 +293,14 @@ display(void)
 		glcRenderString ("wait command");
 	}
 	glPopMatrix ();
+
+	glTranslatef (0.f, -scale2[1], 0.f);
+	glPushMatrix ();
+	glScalef (scale2[0], scale2[1], 0.f);
+		glcRenderString ("selected: ");
+		glcRenderString (sel_text[root_sel.cursel]);
+	glPopMatrix ();
+
  	glutSwapBuffers ();
 	glpe ();
 }
@@ -299,7 +314,7 @@ void reshape(int x, int y)
 }
 
 void
-subkey (struct input_cmds_t *ins, unsigned char key)
+subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 {
 	char *tmp;
 	struct cmdNode_t *cmd;
@@ -396,7 +411,7 @@ subkey (struct input_cmds_t *ins, unsigned char key)
 	if (!(cmd = ins->c->cmd))
 	{
 		/* try find in layer space */
-		if ((cmd = root_sel.sel[root_sel.cursel].cmds))
+		if ((cmd = sel->sel[sel->cursel].cmds))
 		{
 			do
 			{
@@ -410,7 +425,7 @@ subkey (struct input_cmds_t *ins, unsigned char key)
 			while ((++cmd)->tag);
 		}
 		/* try find in global space */
-		if (cmd && !(cmd->tag) && (cmd = root_sel.cmds))
+		if (cmd && !(cmd->tag) && (cmd = sel->cmds))
 		{
 			do
 			{
@@ -480,7 +495,7 @@ subkey (struct input_cmds_t *ins, unsigned char key)
 				}
 				while (--ins->c->argn);
 			}
-			ins->c->cmd->call->merge (root_sel.cursel, &root_sel,
+			ins->c->cmd->call->merge (sel->cursel, sel,
 					ins->c->cmd->call->wargc, ins->c->argv);
 			ins->c = NULL;
 			ins->strlen = 0;
@@ -503,7 +518,7 @@ keyboard(unsigned char key, int x, int y)
 			exit(0);
 			break;
 		default:
-			subkey (&inputs, key);
+			subkey (&inputs, &root_sel, key);
 	}
 	glutPostRedisplay ();
 }
