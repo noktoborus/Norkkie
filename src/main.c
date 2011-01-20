@@ -299,32 +299,31 @@ void reshape(int x, int y)
 }
 
 void
-subkey (unsigned char key)
+subkey (struct input_cmds_t *ins, unsigned char key)
 {
 	char *tmp;
 	struct cmdNode_t *cmd;
-	size_t sz;
 
 	/* test control symbols */
 	if (key == 127)
 	{
 		/* its <DEL> */
-		if (inputs.failch)
+		if (ins->failch)
 		{
-			inputs.failch = '\0';
+			ins->failch = '\0';
 		}
 		else
-		if (inputs.strlen)
+		if (ins->strlen)
 		{
-			inputs.strlen--;
+			ins->strlen--;
 		}
 		else
-		if (inputs.c)
+		if (ins->c)
 		{
 			/* TODO: raise from args last line before remove call ptr */
 			/* remove current call pointer */
-			inputs.c->argn = 0;
-			inputs.c->cmd = NULL;
+			ins->c->argn = 0;
+			ins->c->cmd = NULL;
 			/* TODO: call split */
 		}
 		return;
@@ -333,68 +332,68 @@ subkey (unsigned char key)
 	/* remove all data in input */
 	if (key == 8)
 	{
-		inputs.strlen = 0;
+		ins->strlen = 0;
 		return;
 	}
 
 	/* ignore ',' in start of line and over characters */
-	if ((!inputs.strlen && key == ',') ||
-			(key != ',' && input_filter (inputs.type, key)))
+	if ((!ins->strlen && key == ',') ||
+			(key != ',' && input_filter (ins->type, key)))
 	{
-		inputs.failch = key;
+		ins->failch = key;
 		return;
 	}
 
 	/* test struct input_cmds_t */
-	if (!inputs.c)
+	if (!ins->c)
 	{
-		if (!inputs.i)
+		if (!ins->i)
 		{
-			inputs.i = calloc (1, sizeof (struct input_node_t));
-			if (!inputs.i)
+			ins->i = calloc (1, sizeof (struct input_node_t));
+			if (!ins->i)
 				return;
-			inputs.c = inputs.i;
+			ins->c = ins->i;
 		}
 		else
 		{
-			inputs.c = calloc (1, sizeof (struct input_node_t));
-			if (!inputs.c)
+			ins->c = calloc (1, sizeof (struct input_node_t));
+			if (!ins->c)
 				return;
-			if (inputs.i->prev)
-				inputs.i->prev->next = inputs.c;
-			inputs.c->prev = inputs.i->prev;
-			inputs.i->prev = inputs.c;
+			if (ins->i->prev)
+				ins->i->prev->next = ins->c;
+			ins->c->prev = ins->i->prev;
+			ins->i->prev = ins->c;
 		}
 	}
 
 	/* alloc input string */
-	if (!inputs.input)
+	if (!ins->input)
 	{
-		inputs.input = calloc (INPUT_SZ, sizeof (char));
-		if (!inputs.input)
+		ins->input = calloc (INPUT_SZ, sizeof (char));
+		if (!ins->input)
 			return;
-		inputs.strlen = 0;
+		ins->strlen = 0;
 	}
 	else
 	/* resize string */
-	if ((inputs.strlen + 1) % INPUT_SZ < inputs.strlen % INPUT_SZ)
+	if ((ins->strlen + 1) % INPUT_SZ < ins->strlen % INPUT_SZ)
 	{
-		tmp = calloc (inputs.strlen + INPUT_SZ, sizeof (char));
+		tmp = calloc (ins->strlen + INPUT_SZ, sizeof (char));
 		if (!tmp)
 			return;
-		memcpy (tmp, (const void*)inputs.input, inputs.strlen);
-		free (inputs.input);
-		inputs.input = tmp;
+		memcpy (tmp, (const void*)ins->input, ins->strlen);
+		free (ins->input);
+		ins->input = tmp;
 	}
 
 	/* add new char */
-	inputs.input[inputs.strlen] = key;
-	inputs.strlen++;
+	ins->input[ins->strlen] = key;
+	ins->strlen++;
 	/* free error */
-	inputs.failch = '\0';
+	ins->failch = '\0';
 
 	/** current command not set **/
-	if (!(cmd = inputs.c->cmd))
+	if (!(cmd = ins->c->cmd))
 	{
 		/* try find in layer space */
 		if ((cmd = root_sel.sel[root_sel.cursel].cmds))
@@ -402,10 +401,10 @@ subkey (unsigned char key)
 			do
 			{
 				/* skip smallest or biggest tags */
-				if (cmd->taglen != inputs.strlen)
+				if (cmd->taglen != ins->strlen)
 					continue;
 				/* set current tag to find :3 */
-				if (!strncmp (cmd->tag, inputs.input, inputs.strlen))
+				if (!strncmp (cmd->tag, ins->input, ins->strlen))
 					break;
 			}
 			while ((++cmd)->tag);
@@ -415,9 +414,9 @@ subkey (unsigned char key)
 		{
 			do
 			{
-				if (cmd->taglen != inputs.strlen)
+				if (cmd->taglen != ins->strlen)
 					continue;
-				if (!strncmp (cmd->tag, inputs.input, inputs.strlen))
+				if (!strncmp (cmd->tag, ins->input, ins->strlen))
 					break;
 			}
 			while ((++cmd)->tag);
@@ -434,65 +433,64 @@ subkey (unsigned char key)
 			if (!cmd->call->split)
 				cmd->call->split = msel_func_NULL->split;
 
-			inputs.offset = cmd->taglen;
-			inputs.input[inputs.offset] = '\0';
+			ins->offset = cmd->taglen;
+			ins->input[ins->offset] = '\0';
 
 			/* try alloc memory */
-			inputs.c->argv = calloc (1 + cmd->call->wargc, sizeof (char**));
-			if (!inputs.c->argv)
+			ins->c->argv = calloc (1 + cmd->call->wargc, sizeof (char**));
+			if (!ins->c->argv)
 				return;
-			inputs.c->cmd = cmd;
-			inputs.c->argn = 0;
+			ins->c->cmd = cmd;
+			ins->c->argn = 0;
 		}
 	}
 
 	/* test current command */
-	if (inputs.c->cmd)
+	if (ins->c->cmd)
 	{
-		if (inputs.input[inputs.strlen - 1] == ',')
+		if (ins->input[ins->strlen - 1] == ',')
 		{
-			inputs.input[inputs.strlen] = '\0';
-			inputs.c->argn++;
-			inputs.offset = inputs.strlen - inputs.offset;
+			ins->input[ins->strlen] = '\0';
+			ins->c->argn++;
+			ins->offset = ins->strlen - ins->offset;
 		}
 
 		/* %( */
-		if (inputs.c->argn > inputs.c->cmd->call->wargc)
-			inputs.c->argn = inputs.c->cmd->call->wargc;
+		if (ins->c->argn > ins->c->cmd->call->wargc)
+			ins->c->argn = ins->c->cmd->call->wargc;
 
 		/* test for call */
-		if (inputs.c->argn == inputs.c->cmd->call->wargc)
+		if (ins->c->argn == ins->c->cmd->call->wargc)
 		{
-			inputs.c->argv[0] = calloc (inputs.strlen, sizeof (char));
-			if (!inputs.c->argv[0])
+			ins->c->argv[0] = calloc (ins->strlen, sizeof (char));
+			if (!ins->c->argv[0])
 			{
-				free (inputs.c->argv);
-				inputs.c = NULL;
+				free (ins->c->argv);
+				ins->c = NULL;
 				return;
 			}
-			memcpy (inputs.c->argv[0], inputs.input, inputs.strlen);
+			memcpy (ins->c->argv[0], ins->input, ins->strlen);
 
 			/* ptr to over data */
-			if (inputs.c->argn)
+			if (ins->c->argn)
 			{
 				do
 				{
-					inputs.c->argv[inputs.c->argn] =
-						&inputs.input[--inputs.offset];
+					ins->c->argv[ins->c->argn] = &ins->input[--ins->offset];
 				}
-				while (--inputs.c->argn);
+				while (--ins->c->argn);
 			}
-			inputs.c->cmd->call->merge (root_sel.cursel, &root_sel,
-					inputs.c->cmd->call->wargc, inputs.c->argv);
-			inputs.c = NULL;
-			inputs.strlen = 0;
-			inputs.offset = 0;
-			inputs.type = FINPUT_TSTRING;
+			ins->c->cmd->call->merge (root_sel.cursel, &root_sel,
+					ins->c->cmd->call->wargc, ins->c->argv);
+			ins->c = NULL;
+			ins->strlen = 0;
+			ins->offset = 0;
+			ins->type = FINPUT_TSTRING;
 		}
 		else
 		{
 			/* set input type */
-			inputs.type = inputs.c->cmd->call->wargk[inputs.c->argn];
+			ins->type = ins->c->cmd->call->wargk[ins->c->argn];
 		}
 	}
 }
@@ -505,7 +503,7 @@ keyboard(unsigned char key, int x, int y)
 			exit(0);
 			break;
 		default:
-			subkey (key);
+			subkey (&inputs, key);
 	}
 	glutPostRedisplay ();
 }
