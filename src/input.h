@@ -6,6 +6,7 @@
 #define FINPUT_TSINT	2 /* signed int */
 #define FINPUT_TUINT	3 /* unsigned int */
 #define FINPUT_TFLOAT	4 /* float */
+#define FINPUT_MAX		5
 struct input_n2s_t
 {
 	char type;

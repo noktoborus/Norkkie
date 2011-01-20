@@ -9,7 +9,7 @@ _return (size_t layno, struct select_t *lays, size_t argc, char **argv)
 /* exports */
 struct cmdCall_t msel_func_return[] =
 {
-	{ _return, NULL, 0, NULL }
+	{ _return, NULL, NULL }
 };
 
 /* plugs */
@@ -18,14 +18,18 @@ _not_call_here (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 }
 
+static int _nobody_here[] =
+{
+	FINPUT_TVOID
+};
+
 /* plug export */
 struct cmdCall_t msel_func_NULL[] =
 {
 	{
 		_not_call_here,
 		_not_call_here,
-		0,
-		NULL
+		_nobody_here,
 	}
 };
 

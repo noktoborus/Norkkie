@@ -1,4 +1,4 @@
-CC=colorgcc -std=c99  -pedantic -Wall
+CC=colorgcc -std=c99  -pedantic -Wall -Werror
 LIBS=`pkg-config --libs --cflags gl glu quesoglc` -lglut
 CFLAGS=-g
 

@@ -38,23 +38,28 @@ _radd (size_t layno, struct select_t *lays, size_t argc, char **argv)
 
 static int _rsel_args[]=
 {
-	FINPUT_TUINT
+	FINPUT_TUINT, FINPUT_TSINT, FINPUT_TSTRING, FINPUT_TVOID
 };
-
+#include <stdio.h>
 static void
 _rsel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
+	printf ("call[%s]: %d\n", argv[0], argc);
+	while (argc--)
+	{
+		printf ("\t%s\n", argv[argc]);
+	}
 }
 
 
 /* exported structs */
 struct cmdCall_t msel_func_radd[] =
 {
-	{ _radd, NULL, 0, NULL }
+	{ _radd, NULL, NULL }
 };
 
 struct cmdCall_t msel_func_rsel[] =
 {
-	{ _rsel, NULL, 1, _rsel_args }
+	{ _rsel, NULL, _rsel_args }
 };
 

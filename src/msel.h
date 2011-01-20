@@ -77,9 +77,7 @@ struct cmdCall_t
 	void (*merge) (size_t, struct select_t*, size_t, char**);
 	/*  discard previous `merge call */
 	void (*split) (size_t, struct select_t*, size_t, char**);
-	/* size args structure for malloc */
-	size_t wargc;
-	/* ptr to args, terminate at TVOID*/
+	/* ptr to args, terminate at FINPUT_TVOID*/
 	int *wargk;
 };
 

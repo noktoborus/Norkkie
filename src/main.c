@@ -253,11 +253,19 @@ display(void)
 
 	glScalef (scale2[0], scale2[1], 0.f);
 	glColor3f (1.f, 1.f, 1.f);
+	if (inputs.type < FINPUT_MAX)
+		glcRenderString (input_n2s[inputs.type].string);
+	glcRenderString (" << ");
 	if (inputs.input)
 	{
+		/* WARNING: ... */
 		inputs.input[inputs.strlen] = '\0';
-		glcRenderString (&inputs.input[inputs.offset]);
+		if (inputs.c && inputs.c->argn)
+			glcRenderString (&inputs.input[inputs.offset + 1]);
+		else
+			glcRenderString (&inputs.input[inputs.offset]);
 	}
+
 	if (inputs.failch)
 	{
 		glColor3f (1.0f, 1.f, 0.f);
@@ -273,7 +281,7 @@ display(void)
 		glColor3f (1.f, 1.f, 1.f);
 		glcRenderString (inputs.c->cmd->tag);
 		glcRenderString ("(");
-		for (x = 0; x < inputs.c->cmd->call->wargc; x++)
+		for (x = 0; inputs.c->cmd->call->wargk[x] != FINPUT_TVOID; x++)
 		{
 			if (x < inputs.c->argn)
 			{
@@ -286,7 +294,7 @@ display(void)
 				glcRenderString (", ");
 			}
 		}
-		glcRenderString ("void)");
+		glcRenderString (")");
 	}
 	else
 	{
@@ -318,6 +326,7 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 {
 	char *tmp;
 	struct cmdNode_t *cmd;
+	size_t x;
 
 	/* test control symbols */
 	if (key == 127)
@@ -328,7 +337,7 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 			ins->failch = '\0';
 		}
 		else
-		if (ins->strlen)
+		if (ins->strlen > ins->offset)
 		{
 			ins->strlen--;
 		}
@@ -339,15 +348,20 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 			/* remove current call pointer */
 			ins->c->argn = 0;
 			ins->c->cmd = NULL;
+			ins->type = FINPUT_TSTRING;
+			ins->strlen = 0;
+			ins->offset = 0;
 			/* TODO: call split */
 		}
+		printf ("%d\n", ins->strlen);
 		return;
 	}
 	else
 	/* remove all data in input */
 	if (key == 8)
 	{
-		ins->strlen = 0;
+		ins->strlen = (ins->offset + 1);
+		ins->failch = '\0';
 		return;
 	}
 
@@ -391,7 +405,7 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 	}
 	else
 	/* resize string */
-	if ((ins->strlen + 1) % INPUT_SZ < ins->strlen % INPUT_SZ)
+	if ((ins->strlen + 2) % INPUT_SZ < ins->strlen % INPUT_SZ)
 	{
 		tmp = calloc (ins->strlen + INPUT_SZ, sizeof (char));
 		if (!tmp)
@@ -436,25 +450,25 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 			}
 			while ((++cmd)->tag);
 		}
+
 		/* continues input */
 		if (cmd && cmd->tag)
 		{
 			if (!cmd->call)
 				cmd->call = msel_func_NULL;
 			else
-			if (!cmd->call->merge)
-				cmd->call->merge = msel_func_NULL->merge;
-			else
-			if (!cmd->call->split)
-				cmd->call->split = msel_func_NULL->split;
+			{
+				if (!cmd->call->merge)
+					cmd->call->merge = msel_func_NULL->merge;
+				if (!cmd->call->split)
+					cmd->call->split = msel_func_NULL->split;
+				if (!cmd->call->wargk)
+					cmd->call->wargk = msel_func_NULL->wargk;
+			}
 
-			ins->offset = cmd->taglen;
-			ins->input[ins->offset] = '\0';
 
-			/* try alloc memory */
-			ins->c->argv = calloc (1 + cmd->call->wargc, sizeof (char**));
-			if (!ins->c->argv)
-				return;
+			ins->offset = ins->strlen;
+
 			ins->c->cmd = cmd;
 			ins->c->argn = 0;
 		}
@@ -465,38 +479,53 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 	{
 		if (ins->input[ins->strlen - 1] == ',')
 		{
-			ins->input[ins->strlen] = '\0';
+			ins->offset = ins->strlen - 1;
+			ins->input[ins->offset] = '\0';
 			ins->c->argn++;
-			ins->offset = ins->strlen - ins->offset;
 		}
 
-		/* %( */
-		if (ins->c->argn > ins->c->cmd->call->wargc)
-			ins->c->argn = ins->c->cmd->call->wargc;
-
 		/* test for call */
-		if (ins->c->argn == ins->c->cmd->call->wargc)
+		if (ins->c->cmd->call->wargk[ins->c->argn] == FINPUT_TVOID)
 		{
-			ins->c->argv[0] = calloc (ins->strlen, sizeof (char));
-			if (!ins->c->argv[0])
+			/* alloc:
+			 *	len of input string
+			 *	+ nums of arguments
+			 *	+ 1 byte ander '\0' for command
+			 */
+			ins->c->argv = calloc (1,
+					sizeof (char) * ins->strlen +
+					sizeof (char*) * (ins->c->argn + 1) + 1);
+			if (!ins->c->argv)
 			{
-				free (ins->c->argv);
 				ins->c = NULL;
 				return;
 			}
-			memcpy (ins->c->argv[0], ins->input, ins->strlen);
+
+			/* copy tag to argv */
+			ins->c->argv[0] = (char*)(ins->c->argv + ins->c->argn + 1);
+			memcpy (ins->c->argv[0], ins->c->cmd->tag, ins->c->cmd->taglen);
+			/* terminate argv[0] */
+			ins->c->argv[0][ins->c->cmd->taglen] = '\0';
 
 			/* ptr to over data */
 			if (ins->c->argn)
 			{
+				ins->c->argv[1] = ins->c->argv[0] + ins->c->cmd->taglen + 1;
+				/* copy all input line to args array */
+				memcpy (ins->c->argv[1], &ins->input[ins->c->cmd->taglen],
+						ins->strlen - ins->c->cmd->taglen);
+				x = ins->c->argn;
 				do
 				{
-					ins->c->argv[ins->c->argn] = &ins->input[--ins->offset];
+					/* find last \0 */
+					while (--ins->offset && ins->c->argv[0][ins->offset]);
+					/* set arg point */
+					ins->c->argv[x] = &(ins->c->argv[0][ins->offset + 1]);
 				}
-				while (--ins->c->argn);
+				while (--x);
 			}
 			ins->c->cmd->call->merge (sel->cursel, sel,
-					ins->c->cmd->call->wargc, ins->c->argv);
+					ins->c->argn + 1, ins->c->argv);
 			ins->c = NULL;
 			ins->strlen = 0;
 			ins->offset = 0;
