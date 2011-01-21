@@ -177,10 +177,12 @@ glcpe ()
 	glcpe_inters++;
 }
 
+#define _DISP_BUFSZ 1024
 void
 display(void)
 {
-	size_t x;
+	register size_t x;
+	static char buf[_DISP_BUFSZ];
 	struct listModel_t *model_ptr;
 	float cpos[3] = {0.f, 0.f, 0.f};
 	float npos[3] = {0.f, 0.f, 0.f};
@@ -205,15 +207,25 @@ display(void)
 	glLoadIdentity ();
 
 	glTranslatef (0.0f, 0.0f, scrn_change.distance);
-	/* rotate screen */
-	glRotatef (scrn_change.angle[1], 1.0, 0.0, 0.0);
-	glRotatef (scrn_change.angle[0], 0.0, 1.0, 0.0);
 	/* draw screen */
 	//glPolygonMode (GL_FRONT, GL_LINE);
 	if ((model_ptr = root_sel.model))
 	{
 		do
 		{
+			glPushMatrix ();
+			glTranslatef (-1.f, -1.f, 0.f);
+			snprintf (buf, _DISP_BUFSZ, "%u", model_ptr->model.idno);
+			glColor3f (0.5, 0.5f, 0.5f);
+			glcRenderString (buf);
+			glPopMatrix ();
+
+			glPushMatrix ();
+
+			/* rotate screen */
+			glRotatef (scrn_change.angle[1], 1.0, 0.0, 0.0);
+			glRotatef (scrn_change.angle[0], 0.0, 1.0, 0.0);
+
 		/* TODO */
 			/* draw control */
 			glPointSize (3);
@@ -224,9 +236,12 @@ display(void)
 				glVertex3fv (model_ptr->model.wire.point[x].v);
 			}
 			glEnd ();
+
+			glPopMatrix ();
 		}
 		while ((model_ptr = model_ptr->next) != root_sel.model);
 	}
+
 	/* draw interface */
 	glMatrixMode (GL_PROJECTION);
 	glLoadIdentity ();
