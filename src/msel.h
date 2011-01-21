@@ -15,6 +15,7 @@
 #define SELECT_WIRE		2
 #define SELECT_NODE		3
 #define SELECT_COUNT_S	4
+#define SELECT_BLKSZ	128
 
 struct _select_t
 {
@@ -22,6 +23,7 @@ struct _select_t
 	uint8_t xyz;
 	/* size of nums */
 	size_t sz;
+	/* nums */
 	size_t *nums;
 	size_t cmds_count;
 	struct cmdNode_t *cmds;
@@ -80,6 +82,10 @@ struct cmdCall_t
 	/* ptr to args, terminate at FINPUT_TVOID*/
 	int *wargk;
 };
+
+/* utils */
+int msel_nums_append (struct _select_t *sel, size_t num);
+int msel_nums_remove (struct _select_t *sel, size_t num);
 
 #endif /* _MSEL_1295020820_ */
 

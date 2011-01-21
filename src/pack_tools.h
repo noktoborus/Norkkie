@@ -9,7 +9,7 @@
  * 	int32_t *output int
  */
 void ptArray2SInt32 (const char*, int32_t*);
-void ptArray2Uint32 (const char*, uint32_t*);
+void ptArray2UInt32 (const char*, uint32_t*);
 void ptArray2Float (const char*, float*);
 
 #endif

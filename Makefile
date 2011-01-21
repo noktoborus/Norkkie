@@ -1,4 +1,4 @@
-CC=colorgcc -std=c99  -pedantic -Wall -Werror
+CC=cc -std=c99  -pedantic -Wall -Werror
 LIBS=`pkg-config --libs --cflags gl glu quesoglc` -lglut
 CFLAGS=-g
 
@@ -11,6 +11,7 @@ HDR_d=${SRC_d}
 BIN=${BIN_d}/norkkie
 
 OBJ=${OBJ_d}/main.o\
+	${OBJ_d}/msel.o\
 	${OBJ_d}/input.o\
 	${OBJ_d}/msel_func.o\
 	${OBJ_d}/pack_tools.o\
@@ -26,6 +27,7 @@ HDR=${HDR_d}/input.h\
 	${HDR_d}/nurbs.h
 
 SRC=${SRC_d}/main.c\
+	${SRC_d}/msel.c\
 	${SRC_d}/input.c\
 	${SRC_d}/msel_func.c\
 	${SRC_d}/pack_tools.c\

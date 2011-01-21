@@ -2,7 +2,6 @@
 #define _NURBS_H_1293390403 
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdio.h>
 
 typedef uint8_t NKKBOpt_t;
 #define NKKB_OPT_S0	0

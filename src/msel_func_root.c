@@ -1,4 +1,5 @@
 #include "msel_func.h"
+#include "pack_tools.h"
 /* root layer */
 
 static void
@@ -37,15 +38,35 @@ _rcre (size_t layno, struct select_t *lays, size_t argc, char **argv)
 }
 
 static int _rsel_args[]=
-{
-	FINPUT_TUINT, FINPUT_TVOID
-};
+{ FINPUT_TUINT, FINPUT_TVOID };
 
 static void
 _rsel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
-	while (argc--)
+	uint32_t no = 0;
+	struct listModel_t *model = NULL;
+	if (!lays->model && argc < 2)
+		return;
+	ptArray2UInt32 (argv[1], &no);
+	if ((model = lays->model))
 	{
+		do
+		{
+			if (model->model.idno == no)
+				break;
+		}
+		while ((model = model->next) != lays->model);
+	}
+	else
+		return;
+
+	if (model->model.idno == no)
+	{
+		if (!msel_nums_append (&lays->sel[SELECT_MODEL], no))
+		{
+			model->model.selected = true;
+			lays->cursel = SELECT_MODEL;
+		}
 	}
 }
 
