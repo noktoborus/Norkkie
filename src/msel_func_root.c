@@ -40,14 +40,12 @@ static int _rsel_args[]=
 {
 	FINPUT_TUINT, FINPUT_TVOID
 };
-#include <stdio.h>
+
 static void
 _rsel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
-	printf ("call[%s]: %d\n", argv[0], argc);
 	while (argc--)
 	{
-		printf ("  %2d\t%s\n", argc, argv[argc]);
 	}
 }
 

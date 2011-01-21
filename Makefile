@@ -13,6 +13,7 @@ BIN=${BIN_d}/norkkie
 OBJ=${OBJ_d}/main.o\
 	${OBJ_d}/input.o\
 	${OBJ_d}/msel_func.o\
+	${OBJ_d}/pack_tools.o\
 	${OBJ_d}/msel_func_model.o\
 	${OBJ_d}/msel_func_root.o\
 	${OBJ_d}/nurbs.o
@@ -21,11 +22,13 @@ HDR=${HDR_d}/input.h\
 	${HDR_d}/model.h\
 	${HDR_d}/msel.h\
 	${HDR_d}/msel_func.h\
+	${HDR_d}/pack_tools.h\
 	${HDR_d}/nurbs.h
 
 SRC=${SRC_d}/main.c\
 	${SRC_d}/input.c\
 	${SRC_d}/msel_func.c\
+	${SRC_d}/pack_tools.c\
 	${SRC_d}/msel_func_mode.c\
 	${SRC_d}/msel_func_root.c\
 	${SRC_d}/nurbs.c
