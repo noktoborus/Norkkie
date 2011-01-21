@@ -609,7 +609,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize (600, 600);
-	glutCreateWindow(argv[0]);
+	glutCreateWindow("Norkkie");
 	glutMouseFunc (mouse);
 	glutMotionFunc (motion);
 	glutReshapeFunc(reshape);
