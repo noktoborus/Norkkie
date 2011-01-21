@@ -216,7 +216,10 @@ display(void)
 			glPushMatrix ();
 			glTranslatef (-1.f, -1.f, 0.f);
 			snprintf (buf, _DISP_BUFSZ, "%u", model_ptr->model.idno);
-			glColor3f (0.5, 0.5f, 0.5f);
+			if (model_ptr->model.selected)
+				glColor3f (1.f, 0.5, 0.5);
+			else
+				glColor3f (0.5, 0.5f, 0.5f);
 			glcRenderString (buf);
 			glPopMatrix ();
 
