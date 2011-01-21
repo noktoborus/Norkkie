@@ -257,11 +257,7 @@ display(void)
 		glcRenderString (input_n2s[inputs.type].string);
 	glcRenderString (" << ");
 	if (inputs.input)
-	{
-		/* WARNING: ... */
-		inputs.input[inputs.strlen] = '\0';
 		glcRenderString (&inputs.input[inputs.offset]);
-	}
 
 	if (inputs.failch)
 	{
@@ -542,6 +538,9 @@ keyboard(unsigned char key, int x, int y)
 			break;
 		default:
 			subkey (&inputs, &root_sel, key);
+			/* terminate input string, if need */
+			if (inputs.input)
+				inputs.input[inputs.strlen] = '\0';
 	}
 	glutPostRedisplay ();
 }
