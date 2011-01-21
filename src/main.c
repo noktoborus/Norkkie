@@ -90,7 +90,7 @@ struct scrn_change_t
 /* *** feel select's structs *** */
 struct cmdNode_t __cmdnodes_root[] =
 {
-	{ "a", 1, "/* TODO a */", msel_func_radd },
+	{ "c", 1, "/* TODO a */", msel_func_rcre },
 	{ "s", 1, "/* TODO s */", msel_func_rsel },
 	{ NULL, 0, NULL, NULL }
 };
@@ -506,12 +506,15 @@ subkey (struct input_cmds_t *ins, struct select_t *sel, unsigned char key)
 			{
 				ins->c->argv[1] = ins->c->argv[0] + ins->c->cmd->taglen + 1;
 				x = ins->c->argn;
+				/* fix offset (remove last 2zero) */
+				ins->offset--;
+				/* update links */
 				do
 				{
 					/* find last \0 */
-					while (--ins->offset && ins->c->argv[0][ins->offset]);
+					while (--ins->offset && ins->c->argv[0][ins->offset - 1]);
 					/* set arg point */
-					ins->c->argv[x] = &(ins->c->argv[0][ins->offset + 1]);
+					ins->c->argv[x] = &(ins->c->argv[0][ins->offset]);
 				}
 				while (--x);
 			}

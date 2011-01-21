@@ -9,7 +9,7 @@ extern struct cmdCall_t msel_func_return[];
 
 /* *** Root layer *** */
 	/* create new model */
-extern struct cmdCall_t msel_func_radd[];
+extern struct cmdCall_t msel_func_rcre[];
 	/* select model */
 extern struct cmdCall_t msel_func_rsel[];
 

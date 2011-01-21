@@ -2,7 +2,7 @@
 /* root layer */
 
 static void
-_radd (size_t layno, struct select_t *lays, size_t argc, char **argv)
+_rcre (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 	struct listModel_t *m = NULL;
 	if (!lays->model)
@@ -38,7 +38,7 @@ _radd (size_t layno, struct select_t *lays, size_t argc, char **argv)
 
 static int _rsel_args[]=
 {
-	FINPUT_TUINT, FINPUT_TSINT, FINPUT_TSTRING, FINPUT_TVOID
+	FINPUT_TUINT, FINPUT_TVOID
 };
 #include <stdio.h>
 static void
@@ -47,15 +47,15 @@ _rsel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 	printf ("call[%s]: %d\n", argv[0], argc);
 	while (argc--)
 	{
-		printf ("\t%s\n", argv[argc]);
+		printf ("  %2d\t%s\n", argc, argv[argc]);
 	}
 }
 
 
 /* exported structs */
-struct cmdCall_t msel_func_radd[] =
+struct cmdCall_t msel_func_rcre[] =
 {
-	{ _radd, NULL, NULL }
+	{ _rcre, NULL, NULL }
 };
 
 struct cmdCall_t msel_func_rsel[] =
