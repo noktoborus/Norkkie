@@ -11,7 +11,7 @@ CINCLUDE=-I${SRC_d}/lib
 
 BIN=${BIN_d}/norkkie
 
-OBJ=${OBJ_d}/main.o\
+OBJ=${OBJ_d}/norkkie_main.o\
 	${OBJ_d}/msel.o\
 	${OBJ_d}/input.o\
 	${OBJ_d}/msel_func.o\
@@ -20,26 +20,28 @@ OBJ=${OBJ_d}/main.o\
 	${OBJ_d}/norkkie_nurbs.o\
 	${OBJ_d}/norkkie_pack_tools.o
 
+test_nurbs_OBJ=${OBJ_d}/test_nurbs_main.o\
+			   ${OBJ_d}/norkkie_nurbs.o
 .PHONY: all
 
-all: ${BIN}
-	@printf "  RUN\t$<\n"
-	@${BIN}
+all: ${BIN_d}/norkkie ${BIN_d}/test_nurbs
 
 clean:
 	rm -rf ${BUILD_d}
 
-g:
-	gdb ${BIN}
-
-c:
-	gdb ${BIN} core
-
-${BIN}: ${OBJ_d} ${BIN_d} ${OBJ}
+${BIN_d}/norkkie: ${OBJ_d} ${BIN_d} ${OBJ}
 	@printf "  LD\t$@\n"
 	@${CC} -o $@ ${LIBS} ${OBJ}
 
-${OBJ_d}/main.o: ${SRC_d}/main/main.c
+${BIN_d}/test_nurbs: ${OBJ_d} ${BIN_d} ${test_nurbs_OBJ}
+	@printf "  LD\t$<\n"
+	@${CC} -o $@ ${LIBS} ${test_nurbs_OBJ}
+
+${OBJ_d}/test_nurbs_main.o: ${SRC_d}/test/nurbs/main.c
+	@printf "  CC\t$<\n"
+	@${CC} -o $@ ${CFLAGS} ${CINCLUDE} -c $<
+
+${OBJ_d}/norkkie_main.o: ${SRC_d}/main/main.c
 	@printf "  CC\t$<\n"
 	@${CC} -o $@ ${CFLAGS} ${CINCLUDE} -c $<
 
