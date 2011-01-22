@@ -45,7 +45,7 @@ _rsel (size_t layno, struct select_t *lays, size_t argc, char **argv)
 {
 	uint32_t no = 0;
 	struct listModel_t *model = NULL;
-	if (!lays->model && argc < 2)
+	if (!lays->model || argc < 2)
 		return;
 	ptArray2UInt32 (argv[1], &no);
 	if ((model = lays->model))
