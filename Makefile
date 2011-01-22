@@ -24,7 +24,8 @@ test_nurbs_OBJ=${OBJ_d}/test_nurbs_main.o\
 			   ${OBJ_d}/norkkie_nurbs.o
 .PHONY: all
 
-all: ${BIN_d}/norkkie ${BIN_d}/test_nurbs
+#all: ${BIN_d}/norkkie ${BIN_d}/test_nurbs
+all: ${BIN_d}/test_nurbs
 
 clean:
 	rm -rf ${BUILD_d}
