@@ -34,7 +34,7 @@ ${BIN_d}/norkkie: ${OBJ_d} ${BIN_d} ${OBJ}
 	@${CC} -o $@ ${LIBS} ${OBJ}
 
 ${BIN_d}/test_nurbs: ${OBJ_d} ${BIN_d} ${test_nurbs_OBJ}
-	@printf "  LD\t$<\n"
+	@printf "  LD\t$@\n"
 	@${CC} -o $@ ${LIBS} ${test_nurbs_OBJ}
 
 ${OBJ_d}/test_nurbs_main.o: ${SRC_d}/test/nurbs/main.c

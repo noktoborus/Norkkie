@@ -46,6 +46,8 @@ main (int argc, char *argv[])
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
+
+	glClearColor (0.f, 0.f, 0.f, 0.f);
 	glutMainLoop ();
 	return 0;
 }
