@@ -6,7 +6,7 @@
 #include <GL/glut.h>
 #include <GL/glc.h>
 #include <math.h>
-#include "nurbs.h"
+#include <norkkie/nurbs.h>
 #include "msel.h"
 #include "msel_func.h"
 

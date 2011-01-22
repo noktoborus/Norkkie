@@ -1,5 +1,5 @@
 #include <string.h>
-#include "nurbs.h"
+#include <norkkie/nurbs.h>
 
 inline static unsigned int
 _nkkb_err (struct NKKBWire_t *wire, unsigned int errno)

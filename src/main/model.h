@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "nurbs.h"
+#include <norkkie/nurbs.h>
 
 /* models lists and structs */
 struct model_t

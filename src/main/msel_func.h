@@ -1,5 +1,6 @@
 #ifndef _MSEL_FUNC_1295024119_
 #define _MSEL_FUNC_1295024119_
+#include <norkkie/pack_tools.h>
 #include "msel.h"
 
 /* *** Global Funcs *** */
