@@ -10,10 +10,14 @@
 GLfloat rot[3];
 GLfloat dist = -100.f;
 
+struct NKKBWire_t wire_struct;
+struct NKKBWire_t *wire;
+
 void
 display ()
 {
-	register unsigned int x = 0;
+	register size_t x = 0;
+	char buf[1024];
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity ();
 	for (x = 0; x < 3; x++)
@@ -25,11 +29,49 @@ display ()
 	glRotatef (rot[0], 1.f, 0.f, 0.f);
 	glRotatef (rot[1], 0.f, 1.f, 0.f);
 	glRotatef (rot[2], 0.f, 0.f, 1.f);
+	glTranslatef (-(wire->dimension[0] / 2.f),
+			-(wire->dimension[1] / 2.f), 0.f);
+	/* draw */
+	glPolygonMode (GL_FRONT, GL_LINE);
+	if (wire->polly && wire->polly->size)
+	{
+		glColor3f (0.2f, 0.2f, 0.2f);
+		glBegin (GL_TRIANGLE_STRIP);
+		for (x = 0; x < wire->polly->size; x++)
+		{
+			glVertex3fv (wire->polly->s[x].v);
+		}
+		glEnd ();
+	}
 
+	if (wire->point && wire->size)
+	{
+		/* draw control points */
+		glBegin (GL_POINTS);
+		glColor3f (1.f, 0.f, 0.f);
+		for (x = 0; x < wire->size; x++)
+		{
+			glVertex3fv (wire->point[x].v);
+		}
+		glEnd ();
+	}
 
+	glLoadIdentity ();
+	glTranslatef (0.f, 0.f, -100.f);
+	glColor3f (0.4f, 0.f, 0.f);
+	snprintf (buf, 1024, "rot (%.2f, %.2f, %.2f) dist (%.2f)",
+			rot[0], rot[1], rot[2], dist);
+	glRasterPos2f (-20.f, -10.f);
+	for (x = 0; x < 1024 && buf[x]; x++)
+		glutBitmapCharacter (GLUT_BITMAP_9_BY_15, buf[x]);
+#if 0
+	snprintf (buf, 1024, "size: (%.2f, %.2f)", wire->dimension[0],
+			wire->dimension[1]);
+	glRasterPos2f (-20.f, -20.f);
+	for (x = 0; x < 1024 && buf[x]; x++)
+		glutBitmapCharacter (GLUT_BITMAP_9_BY_15, buf[x]);
+#endif
 	glutSwapBuffers ();
-	printf ("rot (%.2f, %.2f, %.2f) dist (%.2f)\n", rot[0], rot[1], rot[2], dist);
-	printf ("\n");
 }
 
 void
@@ -48,7 +90,7 @@ reshape(int x, int y)
 void
 keyboard(unsigned char key, int x, int y)
 {
-	printf ("%d\n", key);
+	//printf ("%d\n", key);
 	switch (key)
 	{
 		case 27: /* <Esc> */
@@ -61,16 +103,16 @@ keyboard(unsigned char key, int x, int y)
 			dist -= 5.f;
 			break;
 		case 'l':
-			rot[2] += 2.f;
-			break;
-		case 'h':
-			rot[2] -= 2.f;
-			break;
-		case 'i':
 			rot[1] += 2.f;
 			break;
-		case 'm':
+		case 'h':
 			rot[1] -= 2.f;
+			break;
+		case 'i':
+			rot[2] += 2.f;
+			break;
+		case 'm':
+			rot[2] -= 2.f;
 			break;
 
 	}
@@ -88,6 +130,11 @@ main (int argc, char *argv[])
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
 
+	wire = &wire_struct;
+	nkkbWire (wire, 5, 5);
+	nkkbResize (wire, 10, 10);
+	nkkbGenPoints (wire);
+	nkkbGenPolly (wire, 10, 10);
 	glClearColor (0.f, 0.f, 0.f, 0.f);
 	glutMainLoop ();
 	return 0;
