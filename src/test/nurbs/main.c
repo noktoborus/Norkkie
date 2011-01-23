@@ -22,8 +22,8 @@ display ()
 	glLoadIdentity ();
 	for (x = 0; x < 3; x++)
 	{
-		if (rot[x] > 360.f) rot[x] = 0.f;
-		if (rot[x] < 0.f) rot[x] = 360.f;
+		while (rot[x] >= 360.f) rot[x] = rot[x] - 360.f;
+		while (rot[x] < 0.f) rot[x] = rot[x] + 360.f;
 	}
 	glTranslatef (0.f, 0.f, dist);
 	glRotatef (rot[0], 1.f, 0.f, 0.f);
