@@ -85,6 +85,7 @@ void nkkbProc (struct NKKBWire_t *wire, NKKBOpt_t opts, size_t no);
  */
 void nkkbGenPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY);
 void nkkbGenPoints (struct NKKBWire_t *wire);
+/* not a real NURBS curves */
 void nkkbBendPolly (struct NKKBWire_t *wire);
 
 #endif // define _NURBS_H_1293390403

@@ -47,6 +47,7 @@ display ()
 	if (wire->point && wire->size)
 	{
 		/* draw control points */
+		glPointSize (3);
 		glBegin (GL_POINTS);
 		glColor3f (1.f, 0.f, 0.f);
 		for (x = 0; x < wire->size; x++)
@@ -57,6 +58,7 @@ display ()
 	}
 
 	glLoadIdentity ();
+	glClear (GL_DEPTH_BUFFER_BIT);
 	glTranslatef (0.f, 0.f, -100.f);
 	glColor3f (0.4f, 0.f, 0.f);
 	snprintf (buf, 1024, "rot (%.2f, %.2f, %.2f) dist (%.2f)",
@@ -114,6 +116,9 @@ keyboard(unsigned char key, int x, int y)
 		case 'm':
 			rot[2] -= 2.f;
 			break;
+		case 'c':
+			nkkbBendPolly (wire);
+			break;
 
 	}
 	glutPostRedisplay ();
@@ -133,9 +138,12 @@ main (int argc, char *argv[])
 	wire = &wire_struct;
 	nkkbWire (wire, 5, 5);
 	nkkbResize (wire, 10, 10);
+	wire->wire[12].v[2] = 5;
 	nkkbGenPoints (wire);
 	nkkbGenPolly (wire, 10, 10);
+
 	glClearColor (0.f, 0.f, 0.f, 0.f);
+	glEnable (GL_DEPTH_TEST);
 	glutMainLoop ();
 	return 0;
 }

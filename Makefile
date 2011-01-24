@@ -1,6 +1,6 @@
-CC=cc -std=c99  -pedantic -Wall
+CC=cc -g -std=c99  -pedantic -Wall
 LIBS=`pkg-config --libs --cflags gl glu quesoglc` -lglut
-CFLAGS=-g
+CFLAGS=
 
 BUILD_d=./build
 OBJ_d=${BUILD_d}/obj

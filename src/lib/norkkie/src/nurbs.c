@@ -1,3 +1,4 @@
+#include <math.h>
 #include <string.h>
 #include <norkkie/nurbs.h>
 
@@ -136,7 +137,7 @@ nkkbGenPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY)
 	struct NKKBVertex_t vx = {{0.f, 0.f, 0.f}};
 	size_t x = 0;
 	float direct = 1.f;
-	// base alloc
+	/* base alloc */
 	polly = (struct NKKBPolly_t*)calloc (1, sizeof (struct NKKBPolly_t));
 	if (!polly)
 	{
@@ -191,6 +192,7 @@ nkkbGenPolly (struct NKKBWire_t *wire, size_t gressX, size_t gressY)
 						   polly->dimension[0];
 		polly->s[x].v[1] = polly->s[x].v[1] / (float)(gressY + 1) *\
 						   polly->dimension[1];
+		polly->s[x].v[2] = 0.f;
 	}
 	if (wire->polly)
 		free (wire->polly);
@@ -201,7 +203,8 @@ void
 nkkbGenPoints (struct NKKBWire_t *wire)
 {
 	struct NKKBVertex_t *point;
-	size_t s;
+	register size_t s;
+	register size_t x;
 
 	point = calloc (wire->size, sizeof (struct NKKBVertex_t));
 	if (!point)
@@ -217,6 +220,10 @@ nkkbGenPoints (struct NKKBWire_t *wire)
 				wire->dimension[0];
 		point[s].v[1] = (s / wire->len) / (float)(wire->size / wire->len - 1) *
 				wire->dimension[1];
+		for (x = 0; x < 3; x++)
+		{
+			point[s].v[x] += wire->wire[s].v[x];
+		}
 	}
 
 	if (wire->point)
@@ -224,9 +231,35 @@ nkkbGenPoints (struct NKKBWire_t *wire)
 	wire->point = point;
 }
 
+#include <stdio.h>
 void
 nkkbBendPolly (struct NKKBWire_t *wire)
 {
+	register size_t x = 0;
+	register size_t xx = 0;
+	struct NKKBVertex_t pollx = {{0.f, 0.f, 0.f}};
+	float A = 0.f;
+	float B = 0.f;
+	float r = 0.f;
+	if (!wire->polly || !wire->point)
+		return;
 
+	for (x = 0; x < wire->polly->size; x++)
+	{
+		pollx.v[0] = wire->polly->s[x].v[0];
+		pollx.v[1] = wire->polly->s[x].v[1];
+		pollx.v[2] = wire->polly->s[x].v[2];
+		for (xx = 0; xx < wire->size; xx++)
+		{
+			/* calc radius */
+			A = fabsf (pollx.v[0] - wire->point[xx].v[0]) + 1.f;
+			B = fabsf (pollx.v[1] - wire->point[xx].v[1]) + 1.f;
+			A = sqrtf (A * A + B * B);
+			B = fabsf (pollx.v[2] - wire->point[xx].v[2]) + 1.f;
+			r = sqrtf (A * A + B * B);
+			if (r)
+				wire->polly->s[x].v[2] += (1 / r);
+		}
+	}
 }
 
