@@ -10,6 +10,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #pkg_check_modules(GL REQUIRED gl glu)
 include(FindOpenGL)
 include(FindGLUT)
+include(FindFreetype)
+
+if (${FREETYPE_FOUND})
+    set(GL_LIBRARIES ${GL_LIBRARIES} ${FREETYPE_LIBRARIES})
+    set(GL_INCLUDE_DIRS ${GL_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
+else ()
+    message(FATAL_ERROR "Freetype2 not found")
+endif ()
 
 if (${GLUT_FOUND})
     set(GL_LIBRARIES ${GL_LIBRARIES} ${GLUT_glut_LIBRARY})
@@ -46,6 +54,7 @@ link_directories(
 
 include_directories(
     src/lib
+    /usr/include/fontconfig
     ${GL_INCLUDE_DIRS}
     )
 

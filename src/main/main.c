@@ -5,9 +5,12 @@
 #include <string.h>
 #include <GL/glut.h>
 #include <math.h>
+#include <FTGL/ftgl.h>
+
 #include <norkkie/nurbs.h>
 #include "msel.h"
 #include "msel_func.h"
+
 
 struct input_node_t
 {
@@ -608,6 +611,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize (600, 600);
 	glutCreateWindow("Norkkie");
+
 	glutMouseFunc (mouse);
 	glutMotionFunc (motion);
 	glutReshapeFunc(reshape);
