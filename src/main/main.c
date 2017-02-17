@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <GL/glut.h>
-#include <GL/glc.h>
 #include <math.h>
 #include <norkkie/nurbs.h>
 #include "msel.h"
@@ -58,7 +57,7 @@ struct colorRGBA_t
 	float G;
 	float B;
 	float A;
-} colorBackground = 
+} colorBackground =
 {
 	0.0f, 0.0f, 0.0f, 0.0f
 };
@@ -140,7 +139,6 @@ struct select_t root_sel =
 
 /* *** code *** */
 uint64_t glpe_inters = 0;
-uint64_t glcpe_inters = 0;
 inline static void
 glpe ()
 {
@@ -151,30 +149,6 @@ glpe ()
 				glpe_inters);
 	}
 	glpe_inters++;
-}
-
-inline static void
-glcpe ()
-{
-	GLenum er = glcGetError ();
-	char *s = "uncow";
-	if (er != GLC_NONE)
-	{
-		switch (er)
-		{
-			case GLC_PARAMETER_ERROR:
-				s = "error in parameter";
-				break;
-			case GLC_RESOURCE_ERROR:
-				s = "defect resource";
-				break;
-			case GLC_STATE_ERROR:
-				s = "state error";
-				break;
-		}
-		fprintf (stderr, "GLC: %0*x -> %s (%lld)\n", 4, er, s, glcpe_inters);
-	}
-	glcpe_inters++;
 }
 
 #define _DISP_BUFSZ 1024
@@ -220,7 +194,7 @@ display(void)
 				glColor3f (1.f, 0.5, 0.5);
 			else
 				glColor3f (0.5, 0.5f, 0.5f);
-			glcRenderString (buf);
+			/* FIXME: glcRenderString (buf); */
 			glPopMatrix ();
 
 			glPushMatrix ();
@@ -271,16 +245,18 @@ display(void)
 
 	glScalef (scale2[0], scale2[1], 0.f);
 	glColor3f (1.f, 1.f, 1.f);
+	/* FIXME:
 	if (inputs.type < FINPUT_MAX)
 		glcRenderString (input_n2s[inputs.type].string);
 	glcRenderString (" << ");
 	if (inputs.input)
 		glcRenderString (&inputs.input[inputs.offset]);
+	*/
 
 	if (inputs.failch)
 	{
 		glColor3f (1.0f, 1.f, 0.f);
-		glcRenderChar (inputs.failch);
+		/* FIXME: glcRenderChar (inputs.failch);*/
 	}
 	glPopMatrix ();
 
@@ -290,34 +266,41 @@ display(void)
 	if (inputs.c && inputs.c->cmd)
 	{
 		glColor3f (1.f, 1.f, 1.f);
+		/* FIXME:
 		glcRenderString (inputs.c->cmd->tag);
 		glcRenderString ("(");
+		*/
 		for (x = 0; inputs.c->cmd->call->wargk[x] != FINPUT_TVOID; x++)
 		{
 			if (x < inputs.c->argn)
 			{
-				glcRenderString ("ok, ");
+				/* FIXME: glcRenderString ("ok, "); */
 			}
 			else
 			{
+				/* FIXME:
 				glcRenderString (input_n2s[inputs.c->cmd->\
 							call->wargk[x]].string);
 				glcRenderString (", ");
+				*/
 			}
 		}
-		glcRenderString (")");
+		/* FIXME: glcRenderString (")"); */
 	}
 	else
 	{
-		glcRenderString ("wait command");
+		/* FIXME: glcRenderString ("wait command"); */
 	}
 	glPopMatrix ();
 
 	glTranslatef (0.f, -scale2[1], 0.f);
 	glPushMatrix ();
 	glScalef (scale2[0], scale2[1], 0.f);
+		/*
+		FIXME:
 		glcRenderString ("selected: ");
 		glcRenderString (sel_text[root_sel.cursel]);
+		*/
 	glPopMatrix ();
 
  	glutSwapBuffers ();
@@ -621,8 +604,6 @@ motion (int x, int y)
 
 int main(int argc, char **argv)
 {
-	GLint glc_ctx;
-	GLint glc_font;
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize (600, 600);
@@ -632,19 +613,7 @@ int main(int argc, char **argv)
 	glutReshapeFunc(reshape);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
-	
-	glc_ctx = glcGenContext ();
-	glcContext (glc_ctx);
-	glc_font = glcGenFontID ();
-	glc_font = glcNewFontFromFamily (glc_font, "DejaVu Sans Mono");
-	glcFont (glc_font);
-	glcpe ();
 
-#if 0
-	glcRenderStyle (GLC_LINE); /* not work on mesa-gallium? */
-#else
-	glcRenderStyle (GLC_TEXTURE);
-#endif
 	glEnable (GL_TEXTURE_2D); /* for GLC_TEXTURE */
 
 	glutMainLoop();
